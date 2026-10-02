@@ -1,0 +1,33 @@
+{
+  "name": "design-report",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/main.ts",
+    "create-key": "tsx scripts/create-key.ts",
+    "rotate-key": "tsx scripts/rotate-key.ts",
+    "probe": "tsx --env-file=.env scripts/probe-yougile.ts",
+    "dry-run": "tsx --env-file=.env scripts/dry-run.ts",
+    "inspect": "tsx --env-file=.env scripts/inspect.ts",
+    "test": "tsx --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/pg": "^8.23.1",
+    "typescript": "^5.6.0"
+  },
+  "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "exceljs": "^4.4.0",
+    "grammy": "^1.46.0",
+    "node-cron": "^4.6.0",
+    "pg": "^8.23.1",
+    "tsx": "^4.19.0"
+  }
+}
