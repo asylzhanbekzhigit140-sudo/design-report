@@ -74,6 +74,36 @@ async function sendDesignerWeek(bot: Bot, chatId: number, p: Person, monday: str
   await bot.api.sendMessage(chatId, designerReportText(p.name, monday, rows, prev), { parse_mode: "HTML", reply_markup: weeklyKeyboard(monday) });
 }
 
+/**
+ * Тіркелген сәттегі «вау»: бот дизайнердің жұмысын бұрыннан біледі.
+ * Сәлемдесу → өткен аптаның карточкасы → ашық тапсырмалар саны → қысқа тур.
+ */
+export async function welcomeDesigner(bot: Bot, chatId: number, p: Person) {
+  const send = (text: string, extra: object = {}) => bot.api.sendMessage(chatId, text, { parse_mode: "HTML", ...extra }).catch(() => {});
+  await send(`👋 <b>${esc(p.name)}, қош келдің!</b>\nМен YouGile-дегі жұмысыңды бұрыннан көріп отырмын — міне, өткен аптаң:`, { reply_markup: menu() });
+  const last = weekOf(weekOf(Date.now()).startMs - 1).monday;
+  const rows = await weekRows(last, p.yougile_id!);
+  if (rows.length) await sendDesignerWeek(bot, chatId, p, last).catch((e) => console.error("welcome:", e.message));
+  else await send("Өткен аптада ✓ болған тапсырмаң табылмады — бұл аптадан бастап бәрін өзім санаймын.");
+  const open = await q<any>("SELECT deadline_at FROM open_tasks WHERE $1 = ANY(assigned)", [p.yougile_id]);
+  const late = open.filter((o) => o.deadline_at && new Date(o.deadline_at).getTime() < Date.now()).length;
+  const kb = new InlineKeyboard().text("📋 Ашық тапсырмаларым", "wl:tasks").text("❓ Не істей аласың?", "wl:help");
+  if (WEBAPP_URL) kb.row().webApp("📱 Қосымшаны ашу", WEBAPP_URL);
+  await send(
+    [
+      open.length ? `📋 Қазір YouGile-де <b>${open.length}</b> ашық тапсырмаң бар${late ? `, оның ${late}-нің мерзімі өтіп кеткен` : ""}.` : "📋 Қазір ашық тапсырмаң жоқ — тамаша!",
+      "",
+      "<b>Енді не болады:</b>",
+      "• Дүйсенбі 09:00 — апталық есебің осылай өзі келеді",
+      "• Күн сайын 21:50 — HR есебіне көшіруге дайын тізім",
+      "• Есеп туралы кез келген сұрақты жай жаза бер, мысалы: <i>«осы аптада неше карусель жасадым?»</i>",
+      "",
+      "❗️ Жалғыз ереже: дайын файлды YouGile тапсырмасының <b>чатына</b> сал, сосын ✓ қой.",
+    ].join("\n"),
+    { reply_markup: kb },
+  );
+}
+
 /** Админ/басшыға: жалпы карточка + мәтін */
 async function sendTeamWeek(bot: Bot, chatId: number, monday: string) {
   const rows = await weekRows(monday);
@@ -281,6 +311,10 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
         await q("UPDATE people SET telegram_id=$2, link_code=NULL WHERE id=$1", [p.id, tg]);
         await audit(`tg:${tg}`, "linked_by_username", `people:${p.id}`, { username: uname });
         if (p.role === "viewer") await setAdminCommands(bot);
+        if (p.role === "designer") {
+          await welcomeDesigner(bot, tg, { ...p, telegram_id: tg });
+          return notifyAdmins(bot, `🔗 ${p.name} тіркелді (@${uname}).`);
+        }
         await ctx.reply(
           p.role === "viewer"
             ? `✅ ${p.name}, тіркелдіңіз! Апталық Excel сейсенбі 10:00-де келеді.\nҚызметкерлерге хабарлама: /msg`
@@ -325,6 +359,11 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
     await q("UPDATE people SET telegram_id=$2, link_code=NULL, is_admin=(is_admin OR $3) WHERE id=$1", [p.id, tg, makeAdmin]);
     await audit(`tg:${tg}`, "linked", `people:${p.id}`);
     if (makeAdmin || p.role === "viewer") await setAdminCommands(bot);
+    if (p.role === "designer") {
+      await welcomeDesigner(bot, tg, { ...p, telegram_id: tg });
+      if (makeAdmin) await ctx.reply("Админ құқығыңыз сақталды.");
+      return notifyAdmins(bot, `🔗 ${p.name} Telegram-ға тіркелді.`);
+    }
     await ctx.reply(
       `✅ ${p.name}, тіркелдіңіз! ${p.role === "viewer" ? "Апталық Excel сейсенбі 10:00-де келеді.\nҚызметкерлерге хабарлама жіберу: /msg" : "Апталық есебің дүйсенбі 09:00-де келеді.\nТөмендегі мәзірді пайдалан немесе есебің туралы сұрақты жай жаз, мысалы: «осы аптада неше карусель жасадым?»"}${makeAdmin ? "\nАдмин құқығыңыз сақталды." : ""}`,
       p.role === "viewer" ? undefined : { reply_markup: menu() },
@@ -399,6 +438,10 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
     if (!p) return ctx.reply("Бұл адам бұрын тіркелген.");
     await audit(`tg:${ctx.from.id}`, "linked_by_admin", `people:${p.id}`, { tg });
     if (p.role === "viewer") await setAdminCommands(bot);
+    if (p.role === "designer") {
+      await welcomeDesigner(bot, tg, { ...p, telegram_id: tg });
+      return ctx.reply(`✅ ${p.name} тіркелді.`);
+    }
     await bot.api
       .sendMessage(tg, `✅ ${p.name}, тіркелдіңіз!${p.role === "viewer" ? " Апталық Excel сейсенбі 10:00-де келеді. Хабарлама: /msg" : " Төмендегі мәзірді пайдалан немесе сұрағыңды жай жаз."}`, p.role === "viewer" ? undefined : { reply_markup: menu() })
       .catch(() => {});
@@ -690,6 +733,14 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
     const p = await personByTg(ctx.from!.id);
     await ctx.reply(HELP(isAdmin(p)), { parse_mode: "HTML", ...(p && p.role !== "viewer" ? { reply_markup: menu() } : {}) });
   };
+  bot.callbackQuery("wl:tasks", async (ctx) => (await ctx.answerCallbackQuery(), onTasks(ctx)));
+  bot.callbackQuery("wl:help", async (ctx) => (await ctx.answerCallbackQuery(), onHelp(ctx)));
+  bot.command("welcome", async (ctx) => {
+    // Админ өзіне алдын ала көру үшін: дизайнер тіркелгенде не көретінін көрсетеді
+    const p = await personByTg(ctx.from!.id);
+    if (!p?.yougile_id) return ctx.reply("Алдымен /code АТЫҢЫЗ арқылы дизайнер ретінде тіркеліңіз.");
+    await welcomeDesigner(bot, ctx.chat!.id, p);
+  });
   bot.hears(BTN.week, (ctx) => myWeek(ctx, thisMonday()));
   bot.hears(BTN.last, (ctx) => myWeek(ctx, lastMonday()));
   bot.hears(BTN.tasks, onTasks);
