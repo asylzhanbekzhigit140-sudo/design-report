@@ -56,6 +56,7 @@ export const WORK_TYPES = [
   "Пост",
   "Карусель",
   "YouTube обложка",
+  "Рилс обложка",
   "Таргет баннер",
   "Баннер",
   "Раздатка",
@@ -98,6 +99,13 @@ export const RULES: Rule[] = [
     outputs: [{ workType: "Баннер", expr: "N" }],
   },
   {
+    // Атауында анық «рилс/reels» болса — рилс обложка. Ал жай «обложка» екіұшты (карусель мұқабасы да болуы мүмкін):
+    // ол R1/R2 бойынша саналады, бірақ бот дизайнерден бір батырмамен растауды сұрайды (cover_checks).
+    code: "R12", level: 2, description: "Marketing + атауында «рилс / reels» → N рилс обложка",
+    when: { project: "Marketing", titleAny: ["рилс", "рилз", "reels", "reel"] },
+    outputs: [{ workType: "Рилс обложка", expr: "N" }],
+  },
+  {
     code: "R7", level: 2, description: "Раздатка / handout / peer work → N раздатка",
     when: { titleAny: ["раздатка", "раздаточ", "handout", "peer work"] },
     outputs: [{ workType: "Раздатка", expr: "N" }],
@@ -123,7 +131,7 @@ export const RULES: Rule[] = [
     outputs: [{ workType: "YouTube обложка", expr: "N" }],
   },
   // 4-деңгей: орын ережесі жоқ жерлерге (JUZENG, HR, PR, UBT, Design » ӨЗ ТЗ…) атау бойынша жалпы ережелер.
-  // Marketing » Пән акк / Проект-те R1/R2 (3-деңгей) басым, сондықтан «Обложка (2)» онда әлі де пост+карусель.
+  // Marketing-тегі жай «обложка» R1/R2 бойынша саналады, бот дизайнерден растауды сұрайды.
   {
     code: "R9", level: 4, description: "Атауында «обложка / шапка / превью» → N обложка",
     when: { titleAny: ["обложк", "шапка", "превью", "preview", "cover"] },

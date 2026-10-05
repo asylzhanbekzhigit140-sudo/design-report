@@ -6,12 +6,13 @@
  *   сс 10:00      — Excel басшыға, апта жабылады
  */
 import cron from "node-cron";
-import { connect } from "./db/db.js";
+import { connect, getSetting, setSetting } from "./db/db.js";
 import { config } from "./config.js";
 import { YouGileClient } from "./yougile/client.js";
 import { syncAll } from "./services/sync.js";
 import { createBot, notifyPending, sendWeekly, sendToBoss, notifyAdmins, USER_COMMANDS, setAdminCommands, applyProfile, sendExcel, sendHrPrep } from "./bot/bot.js";
 import { startWebServer } from "./web/server.js";
+import { recalcOpenWeeks } from "./services/calcs.js";
 import { weekOf } from "./time/week.js";
 import { findNewTzIssues, tzIssuesText } from "./services/tzcheck.js";
 import { publishOpenWeeks } from "./services/sheets.js";
@@ -59,6 +60,14 @@ async function main() {
   await bot.api.setMyCommands(USER_COMMANDS);
   await setAdminCommands(bot);
   await applyProfile(bot);
+
+  // Ережелер өзгерсе (жаңа нұсқа) — ашық апталарды бір рет қайта есептеу
+  const RULES_VERSION = "2026-10-05-r12";
+  if ((await getSetting<string>("rules_version", "")) !== RULES_VERSION) {
+    const n = await recalcOpenWeeks("system:rules");
+    await setSetting("rules_version", RULES_VERSION);
+    if (n) await notifyAdmins(bot, `🔁 Ережелер жаңартылды («рилс/reels» → Рилс обложка). Ашық апталарда ${n} тапсырма қайта есептелді.`);
+  }
 
   // Mini App сервері (Railway PORT береді)
   if (process.env.PORT || process.env.WEBAPP_URL)

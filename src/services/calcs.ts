@@ -5,6 +5,8 @@
 import { q, one, audit } from "../db/db.js";
 import { applyAnswer, calcOptions } from "./sync.js";
 import type { Calculation } from "../core/calculate.js";
+import { applyRules } from "../core/rules.js";
+import { RULES } from "../seed/catalog.js";
 
 export type CalcRow = {
   id: number; task_id: string; designer_yid: string; week: string; is_supplement: boolean;
@@ -60,6 +62,31 @@ export async function revertCorrection(correctionId: number, actor: string) {
   await q("UPDATE corrections SET reverted_by=$2, reverted_at=now() WHERE id=$1", [correctionId, actor]);
   await audit(actor, "revert", `correction:${correctionId}`, { restored: c.old_items });
   return true;
+}
+
+/**
+ * Ереже өзгергенде ашық апталарды қайта есептеу.
+ * Адам араласқандарды (түзетілген, жауап берілген, қолмен енгізілген, өткізілген) өзгертпейді.
+ */
+export async function recalcOpenWeeks(actor = "system") {
+  const rows = await q<CalcRow>(
+    `SELECT c.* FROM calculations c JOIN weeks w ON w.monday=c.week
+      WHERE w.status='open' AND c.status IN ('ok','needs_review') AND c.answer IS NULL AND NOT c.manual
+        AND c.file_count > 0 AND NOT c.is_supplement`,
+  );
+  let changed = 0;
+  for (const r of rows) {
+    const res = applyRules(RULES, r.trace.location ?? null, r.trace.title, r.file_count, !!r.trace.secondary);
+    const items = res.status === "ok" ? res.items! : {};
+    const status = res.status === "ok" ? "ok" : "needs_review";
+    const code = res.rule?.code ?? null;
+    if (JSON.stringify(items) === JSON.stringify(r.items) && status === r.status && code === r.rule_code) continue;
+    await q("UPDATE calculations SET items=$2, status=$3, rule_code=$4, reasons=$5, updated_at=now() WHERE id=$1",
+      [r.id, JSON.stringify(items), status, code, res.status === "ok" ? [] : [res.reason ?? "Ереже табылмады"]]);
+    await audit(actor, "recalc", `calc:${r.id}`, { before: r.items, after: items, rule: code });
+    changed++;
+  }
+  return changed;
 }
 
 export async function skipCalc(id: number, actor: string) {

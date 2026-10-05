@@ -148,3 +148,10 @@ CREATE TABLE IF NOT EXISTS tz_warnings (
   reasons   TEXT[] NOT NULL,
   warned_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- v6: Marketing-тегі «обложка» тапсырмаларын дизайнерден растау (рилс па, пост па) — бір рет
+CREATE TABLE IF NOT EXISTS cover_checks (
+  calc_id   INTEGER PRIMARY KEY,
+  asked_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  answer    TEXT
+);

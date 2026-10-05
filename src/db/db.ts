@@ -41,6 +41,10 @@ export async function audit(actor: string, action: string, entity: string, data?
   await q("INSERT INTO audit_log (actor, action, entity, data) VALUES ($1,$2,$3,$4)", [actor, action, entity, data ?? null]);
 }
 
+export async function setSetting(key: string, value: unknown) {
+  await q("INSERT INTO settings (key, value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value", [key, JSON.stringify(value)]);
+}
+
 export async function getSetting<T>(key: string, fallback: T): Promise<T> {
   const r = await one<{ value: T }>("SELECT value FROM settings WHERE key=$1", [key]);
   return r ? r.value : fallback;

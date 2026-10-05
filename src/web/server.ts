@@ -40,7 +40,7 @@ export function verifyInitData(initData: string, botToken: string, maxAgeSec = 8
 const GROUPS: [string, string[]][] = [
   ["Пост", ["Пост"]],
   ["Карусель", ["Карусель"]],
-  ["Обложка", ["YouTube обложка", "Обложка", "ҰБТ обложка"]],
+  ["Обложка", ["YouTube обложка", "Рилс обложка", "Обложка", "ҰБТ обложка"]],
   ["Басқа", ["Таргет баннер", "Баннер", "Раздатка", "Презентация"]],
 ];
 const groups = (rows: ReportRow[]) => {

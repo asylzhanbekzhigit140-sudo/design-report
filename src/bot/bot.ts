@@ -7,7 +7,7 @@ import { randomBytes } from "node:crypto";
 import { q, one, audit } from "../db/db.js";
 import { weekRows, designerReportText, designerDetailsText, taskLine, adminSummaryText, taskName, subjectOf, fmtItems, esc } from "../services/reports.js";
 import { buildWeekWorkbook } from "../services/excel.js";
-import { answerCalc, correctCalc, revertCorrection, skipCalc, getCalc } from "../services/calcs.js";
+import { answerCalc, correctCalc, revertCorrection, skipCalc, getCalc, recalcOpenWeeks, type CalcRow } from "../services/calcs.js";
 import { WORK_TYPES, subjectFor } from "../seed/catalog.js";
 import { weekOf, weekRangeText, weekFromMonday } from "../time/week.js";
 void weekRangeText;
@@ -23,7 +23,8 @@ export type Person = {
 export const isAdmin = (p?: Person | null) => !!p && (p.role === "admin" || p.is_admin);
 
 type State =
-  | { kind: "fixNum"; calcId: number; wt: string }
+  | { kind: "fixDraft"; calcId: number; items: Record<string, number> }
+  | { kind: "fixNum"; calcId: number; wt: string; items?: Record<string, number> }
   | { kind: "fixReason"; calcId: number; items: Record<string, number> }
   | { kind: "manual"; calcId: number }
   | { kind: "msgPick"; selected: number[] }
@@ -225,6 +226,7 @@ export const ADMIN_COMMANDS = [
   { command: "code", description: "Админ: жеке тіркеу сілтемесі" },
   { command: "people", description: "Админ: адамдар тізімі" },
   { command: "sync", description: "Админ: қазір синхронизация" },
+  { command: "recalc", description: "Админ: ережелер бойынша қайта есептеу" },
 ];
 
 export const BOSS_COMMANDS = [{ command: "msg", description: "Қызметкерлерге хабарлама жіберу" }];
@@ -485,6 +487,12 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
     await sendExcel(bot, ctx.chat!.id, monday, `Апталық есеп: ${monday}`);
   });
 
+  bot.command("recalc", async (ctx) => {
+    if (!(await admin(ctx))) return;
+    const n = await recalcOpenWeeks(`tg:${ctx.from!.id}`);
+    await ctx.reply(`✅ Ашық апталар жаңа ережелермен қайта есептелді: ${n} тапсырма өзгерді.\nДизайнер түзеткен тапсырмалар өзгертілген жоқ.`);
+  });
+
   bot.command("sheet", async (ctx) => {
     if (!(await admin(ctx))) return;
     if (!sheetsClient()) return ctx.reply("Google Sheets қосылмаған (GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_SHEET_ID).");
@@ -545,25 +553,128 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
     await ctx.reply("Қай тапсырмада қате бар?", { reply_markup: kb });
   });
 
-  // Түзету: тапсырма → жұмыс түрі → сан → себеп
-  bot.callbackQuery(/^fix:(\d+)$/, async (ctx) => {
-    await ctx.answerCallbackQuery();
-    const p = await personByTg(ctx.from.id);
-    const c = await getCalc(Number(ctx.match[1]));
-    if (!p || !c || (!isAdmin(p) && c.designer_yid !== p.yougile_id)) return;
+  // Түзету: тапсырма → жоба (бірнеше түрді өзгертуге, 0 қоюға болады) → тексеру → себеп
+  const sum = (it: Record<string, number>) => Object.values(it).reduce((a, b) => a + (b || 0), 0);
+  const draftOf = (tg: number, c: CalcRow) => {
+    const s0 = state.get(tg);
+    return (s0 && "items" in s0 && s0.calcId === c.id && s0.items ? { ...s0.items } : { ...c.items }) as Record<string, number>;
+  };
+  async function showDraft(ctx: Context, c: CalcRow, items: Record<string, number>, edit = false) {
+    state.set(ctx.from!.id, { kind: "fixDraft", calcId: c.id, items });
     const kb = new InlineKeyboard();
     WORK_TYPES.forEach((wt, i) => {
-      kb.text(`${wt}${c.items[wt] ? ` (${c.items[wt]})` : ""}`, `fw:${c.id}:${i}`);
+      const v = items[wt] ?? 0;
+      kb.text(`${v ? "● " : ""}${wt}: ${v}`, `fw:${c.id}:${i}`);
       if (i % 2) kb.row();
     });
-    await ctx.reply(`${taskName(c)} — ${c.file_count} файл.\nҚазір: ${fmtItems(c.items) || "—"}\nҚай жұмыс түрінің саны қате?`, { reply_markup: kb });
+    kb.row().text("🧹 Бәрін 0", `fz:${c.id}`).text("↩️ Бастапқы", `fr:${c.id}`);
+    kb.row().text("✅ Сақтау", `fs:${c.id}`).text("✖ Болдырмау", `fx:${c.id}`);
+    const changed = JSON.stringify(Object.fromEntries(Object.entries(items).filter(([, v]) => v))) !== JSON.stringify(c.items);
+    const text =
+      `${taskName(c)} — чатта ${c.file_count} файл.\n` +
+      `Бұрын: ${fmtItems(c.items) || "—"}\n` +
+      `Жаңа: ${fmtItems(items) || "—"}${changed ? " ✏️" : ""}\n\n` +
+      `Өзгертетін жұмыс түрін басыңыз. Керек емес түрге 0 жазыңыз — ол өшіріледі. Бірнеше түрді қатар өзгертуге болады, соңында «✅ Сақтау».`;
+    if (edit) return ctx.editMessageText(text, { reply_markup: kb }).catch(() => ctx.reply(text, { reply_markup: kb }));
+    return ctx.reply(text, { reply_markup: kb });
+  }
+  async function own(ctx: Context, id: number) {
+    const p = await personByTg(ctx.from!.id);
+    const c = await getCalc(id);
+    if (!p || !c || (!isAdmin(p) && c.designer_yid !== p.yougile_id)) return null;
+    return c;
+  }
+
+  bot.callbackQuery(/^cv:(\d+):(r|ok)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const c = await own(ctx, Number(ctx.match[1]));
+    if (!c) return;
+    await ctx.editMessageReplyMarkup().catch(() => {});
+    await q("UPDATE cover_checks SET answer=$2 WHERE calc_id=$1", [c.id, ctx.match[2]]);
+    if (ctx.match[2] === "ok") return ctx.reply("✅ Жақсы, пост + карусель болып қалды.");
+    const items = { "Рилс обложка": c.file_count };
+    const id = await correctCalc(c.id, items, "Бәрі рилс обложка (растау батырмасы)", `tg:${ctx.from.id}`);
+    await ctx.reply(`✅ Түзетілді: ${fmtItems(items)}`);
+    const who = (await personByTg(ctx.from.id))?.name ?? "";
+    await notifyAdmins(bot, `🎬 ${who}: ${taskName(c)} → ${fmtItems(items)} (бұрын: ${fmtItems(c.items)})`, new InlineKeyboard().text("↩️ Қайтару", `rv:${id}`));
+  });
+
+  bot.callbackQuery(/^fix:(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const c = await own(ctx, Number(ctx.match[1]));
+    if (c) await showDraft(ctx, c, { ...c.items });
   });
 
   bot.callbackQuery(/^fw:(\d+):(\d+)$/, async (ctx) => {
     await ctx.answerCallbackQuery();
+    const c = await own(ctx, Number(ctx.match[1]));
+    if (!c) return;
     const wt = WORK_TYPES[Number(ctx.match[2])];
-    state.set(ctx.from.id, { kind: "fixNum", calcId: Number(ctx.match[1]), wt });
-    await ctx.reply(`«${wt}» дұрыс санын жазыңыз (тек сан, мысалы 15):`);
+    const items = draftOf(ctx.from.id, c);
+    state.set(ctx.from.id, { kind: "fixNum", calcId: c.id, wt, items });
+    const kb = new InlineKeyboard()
+      .text(`Барлық ${c.file_count} файл — ${wt}`, `fa:${c.id}:${ctx.match[2]}`).row()
+      .text("0 — өшіру", `fn:${c.id}:${ctx.match[2]}:0`).text("↩️ Артқа", `fb:${c.id}`);
+    await ctx.reply(
+      `«${wt}» — қазір ${items[wt] ?? 0}. Дұрыс санын жазыңыз (0–500).\n\nНемесе: «Барлық ${c.file_count} файл — ${wt}» — басқа түрлер 0 болады.`,
+      { reply_markup: kb },
+    );
+  });
+
+  // «Барлығы осы түр»: басқасын 0, бұл түрге файл саны
+  bot.callbackQuery(/^fa:(\d+):(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const c = await own(ctx, Number(ctx.match[1]));
+    if (!c) return;
+    await showDraft(ctx, c, { [WORK_TYPES[Number(ctx.match[2])]]: c.file_count });
+  });
+  bot.callbackQuery(/^fn:(\d+):(\d+):(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const c = await own(ctx, Number(ctx.match[1]));
+    if (!c) return;
+    const items = draftOf(ctx.from.id, c);
+    items[WORK_TYPES[Number(ctx.match[2])]] = Number(ctx.match[3]);
+    await showDraft(ctx, c, items);
+  });
+  bot.callbackQuery(/^fb:(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const c = await own(ctx, Number(ctx.match[1]));
+    if (c) await showDraft(ctx, c, draftOf(ctx.from.id, c));
+  });
+  bot.callbackQuery(/^fz:(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const c = await own(ctx, Number(ctx.match[1]));
+    if (c) await showDraft(ctx, c, {}, true);
+  });
+  bot.callbackQuery(/^fr:(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const c = await own(ctx, Number(ctx.match[1]));
+    if (c) await showDraft(ctx, c, { ...c.items }, true);
+  });
+  bot.callbackQuery(/^fx:(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    state.delete(ctx.from.id);
+    await ctx.editMessageReplyMarkup().catch(() => {});
+    await ctx.reply("Түзету болдырылмады, ештеңе өзгерген жоқ.");
+  });
+
+  // Сақтау: өзгеріс бар ма, жиыны файл санына сәйкес пе — тексеріп барып себеп сұрайды
+  bot.callbackQuery(/^fs(y?):(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const c = await own(ctx, Number(ctx.match[2]));
+    if (!c) return;
+    const items = Object.fromEntries(Object.entries(draftOf(ctx.from.id, c)).filter(([, v]) => v > 0));
+    if (JSON.stringify(items) === JSON.stringify(c.items)) return ctx.reply("Өзгеріс жоқ — сандар бұрынғыдай.");
+    if (!ctx.match[1] && sum(items) !== c.file_count) {
+      state.set(ctx.from.id, { kind: "fixDraft", calcId: c.id, items });
+      return ctx.reply(
+        `⚠️ Жаңа жиыны — ${sum(items)} жұмыс, ал чатта ${c.file_count} файл.\n${fmtItems(items) || "—"}\n\nБұл дұрыс па? (мысалы, бір файлда бірнеше жұмыс болса — дұрыс)`,
+        { reply_markup: new InlineKeyboard().text("Иә, сақтау", `fsy:${c.id}`).text("✏️ Түзету", `fb:${c.id}`) },
+      );
+    }
+    await ctx.editMessageReplyMarkup().catch(() => {});
+    state.set(ctx.from.id, { kind: "fixReason", calcId: c.id, items });
+    await ctx.reply(`Жаңа: ${fmtItems(items) || "—"}\nСебебін қысқаша жазыңыз (мысалы: «бәрі рилс обложка»):`);
   });
 
   // Сұрақ: түзету ме, қосымша ма
@@ -787,8 +898,7 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
         await ctx.reply(`✅ Сақталды (қолмен енгізілді): ${fmtItems(r?.items ?? {}) || "—"}`);
         return notifyAdmins(bot, `✍️ ${taskName(c)}: файл чатта жоқ, дизайнер ${n} деп енгізді.`);
       }
-      state.set(ctx.from.id, { kind: "fixReason", calcId: c.id, items: { ...c.items, [s.wt]: n } });
-      return ctx.reply("Себебін қысқаша жазыңыз (мысалы: «бір файл қайталанып кеткен»):");
+      return showDraft(ctx, c, { ...(s.items ?? c.items), [s.wt]: n });
     }
 
     if (s.kind === "fixReason") {
@@ -836,6 +946,26 @@ export async function sendWeekly(bot: Bot, monday: string) {
 
 /** Шешілмеген сұрақтарды дизайнерлерге жіберу (әрқайсысы бір рет) */
 export async function notifyPending(bot: Bot) {
+  // Екіұшты «обложка»: пост+карусель деп саналды — дизайнерден бір батырмамен растау
+  const covers = await q<any>(
+    `SELECT c.*, p.telegram_id FROM calculations c
+       JOIN weeks w ON w.monday=c.week JOIN people p ON p.yougile_id=c.designer_yid
+       LEFT JOIN cover_checks k ON k.calc_id=c.id
+      WHERE w.status='open' AND k.calc_id IS NULL AND c.status='ok' AND c.rule_code IN ('R1','R2')
+        AND c.trace->>'title' ILIKE '%обложк%' AND p.telegram_id IS NOT NULL AND p.active LIMIT 20`,
+  );
+  for (const c of covers) {
+    await q("INSERT INTO cover_checks (calc_id) VALUES ($1) ON CONFLICT DO NOTHING", [c.id]);
+    await bot.api
+      .sendMessage(c.telegram_id, `🎬 ${taskName(c)} — ${c.file_count} файл.\nМен «${fmtItems(c.items)}» деп санадым. Бұл рилс обложка ма, әлде пост пен карусель ме?`, {
+        reply_markup: new InlineKeyboard()
+          .text(`🎬 Бәрі рилс обложка (${c.file_count})`, `cv:${c.id}:r`).row()
+          .text("✅ Пост + карусель — дұрыс", `cv:${c.id}:ok`).row()
+          .text("✏️ Басқаша", `fix:${c.id}`),
+      })
+      .catch(() => {});
+  }
+
   const rows = await q<any>(
     `SELECT c.*, p.telegram_id, t.completed_at FROM calculations c
        JOIN people p ON p.yougile_id=c.designer_yid JOIN tasks t ON t.yougile_id=c.task_id JOIN weeks w ON w.monday=c.week

@@ -148,3 +148,14 @@ test("Google JWT RS256 қолтаңбасы дұрыс", () => {
   assert.equal(ok, true);
   assert.equal(JSON.parse(Buffer.from(b, "base64").toString()).iss, "bot@x.iam.gserviceaccount.com");
 });
+
+test("Marketing-тегі обложка → рилс обложка; Youtube колонкасы бұрынғыдай", () => {
+  const items = (loc: any, title: string, n: number) => (applyRules(RULES, loc, title, n) as any).items;
+  const comm = { project: "Marketing", board: "Проект", column: "Comm" };
+  assert.deepEqual(items(comm, "Обложкалар < cmty (2)", 5), { Пост: 1, Карусель: 4 }); // екіұшты → растау сұралады
+  assert.deepEqual(items(comm, "Рилс обложкалар", 5), { "Рилс обложка": 5 });
+  assert.deepEqual(items(comm, "Reels шапка", 3), { "Рилс обложка": 3 });
+  assert.deepEqual(items({ project: "Marketing", board: "Проект", column: "Youtube" }, "Обложка", 2), { "YouTube обложка": 2 });
+  assert.deepEqual(items({ project: "Marketing", board: "Пән акк", column: "Биология" }, "Мотив пост", 4), { Пост: 1, Карусель: 3 });
+  assert.deepEqual(items({ project: "Product", board: "YouTube", column: "ТЗ" }, "обложка", 2), { "YouTube обложка": 2 });
+});
