@@ -1,0 +1,310 @@
+{
+  "monday": "2026-09-28",
+  "label": "ҚЫРКҮЙЕК 4-АПТА",
+  "range": "28 қыркүйек – 4 қазан",
+  "month": "ҚЫРКҮЙЕК",
+  "generatedAt": "2026-10-10T16:25:43.426Z",
+  "designers": [
+    {
+      "name": "Айымбол",
+      "excelName": "Бекболат",
+      "fullName": "БЕКБОЛАТ АЙЫМБОЛ",
+      "works": [
+        "design » өз тз таргет баннер - 2 шт",
+        "design » өз тз обложка - 2 шт"
+      ],
+      "totals": {
+        "Таргет баннер": 2,
+        "Обложка": 2
+      },
+      "tasks": 4,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "Жания",
+      "excelName": "Абубакирова",
+      "fullName": "АБУБАКИРОВА ЖӘНИЯ ЖАНДОСҚЫЗЫ",
+      "works": [
+        "химия - 1 пост",
+        "химия - 8 карусель",
+        "инфо - 1 пост",
+        "инфо - 9 карусель"
+      ],
+      "totals": {
+        "Пост": 2,
+        "Карусель": 17
+      },
+      "tasks": 2,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "Нұрмұхаммад",
+      "excelName": "Асханов",
+      "fullName": "АСХАНОВ НҰРМУХАММАД АБДУХАМИТҰЛЫ",
+      "works": [
+        "youtube youtube обложка - 10 шт",
+        "физика - 1 пост",
+        "физика - 7 карусель"
+      ],
+      "totals": {
+        "YouTube обложка": 10,
+        "Пост": 1,
+        "Карусель": 7
+      },
+      "tasks": 9,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "Асылжан",
+      "excelName": "Бекжігіт",
+      "fullName": "БЕКЖІГІТ АСЫЛЖАН",
+      "works": [
+        "youtube youtube обложка - 7 шт",
+        "youtube раздатка - 6 шт",
+        "ағылшын - 4 пост",
+        "ағылшын - 29 карусель"
+      ],
+      "totals": {
+        "Раздатка": 6,
+        "YouTube обложка": 7,
+        "Пост": 4,
+        "Карусель": 29
+      },
+      "tasks": 9,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "Алтынай",
+      "excelName": "Махмутхан",
+      "fullName": "МАХМУТХАНҚЫЗЫ АЛТЫНАЙ",
+      "works": [
+        "джт - 2 пост",
+        "джт - 15 карусель"
+      ],
+      "totals": {
+        "Пост": 2,
+        "Карусель": 15
+      },
+      "tasks": 2,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "Илан",
+      "excelName": "Рамазан",
+      "fullName": "РАМАЗАН ИЛАН ҚҰРМЕТҚЫЗЫ",
+      "works": [
+        "juz40 onl - 7 пост",
+        "juz40 onl - 52 карусель",
+        "youtube youtube обложка - 4 шт"
+      ],
+      "totals": {
+        "Пост": 7,
+        "Карусель": 52,
+        "YouTube обложка": 4
+      },
+      "tasks": 10,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "Балауса",
+      "excelName": "Нұрсұлтан",
+      "fullName": "НҰРСҰЛТАН БАЛАУСА ЕРКІНҚЫЗЫ",
+      "works": [
+        "география - 1 пост",
+        "география - 7 карусель",
+        "comm - 5 пост",
+        "comm - 35 карусель"
+      ],
+      "totals": {
+        "Пост": 6,
+        "Карусель": 42
+      },
+      "tasks": 6,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "Алина",
+      "excelName": "Маликова",
+      "fullName": "МАЛИКОВА АЛИНА МАЛИКОВНА",
+      "works": [],
+      "totals": {},
+      "tasks": 0,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "Нұрбол",
+      "excelName": "Қален",
+      "fullName": "ҚАЛЕН НҰРБОЛ СЕРІКҰЛЫ",
+      "works": [
+        "құқық - 1 пост",
+        "құқық - 7 карусель",
+        "comm - 5 пост",
+        "comm - 4 карусель"
+      ],
+      "totals": {
+        "Пост": 6,
+        "Карусель": 11
+      },
+      "tasks": 2,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    },
+    {
+      "name": "Айнур",
+      "excelName": "Шакизат",
+      "fullName": "ШАКИЗАТ АЙНУР МАҚСАТҚЫЗЫ",
+      "works": [
+        "juzeng » 6 сағат талдау баннер - 1 шт",
+        "youtube youtube обложка - 4 шт",
+        "hr » тз обложка - 1 шт",
+        "hr » ұстаздар күні баннер - 2 шт"
+      ],
+      "totals": {
+        "Баннер": 3,
+        "YouTube обложка": 4,
+        "Обложка": 1
+      },
+      "tasks": 5,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [],
+      "conversion": {
+        "op": null,
+        "strat": null,
+        "overall": 0,
+        "done": 0,
+        "total": 0
+      }
+    }
+  ]
+}
