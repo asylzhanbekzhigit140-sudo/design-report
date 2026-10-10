@@ -159,3 +159,30 @@ test("Marketing-тегі обложка → рилс обложка; Youtube к�
   assert.deepEqual(items({ project: "Marketing", board: "Пән акк", column: "Биология" }, "Мотив пост", 4), { Пост: 1, Карусель: 3 });
   assert.deepEqual(items({ project: "Product", board: "YouTube", column: "ТЗ" }, "обложка", 2), { "YouTube обложка": 2 });
 });
+
+test("айлық мақсат: мәтінді талдау және конверсия (кестедегі формула)", async () => {
+  const { parseGoalLine, parseFacts, parseProofs, conversion, summary } = await import("../src/services/goals.js");
+  assert.deepEqual(parseGoalLine("1. Өнімділікті 95%-дан түсірмеу | 95%"), { title: "Өнімділікті 95%-дан түсірмеу", target: 95, isPercent: true });
+  assert.deepEqual(parseGoalLine("ERF көрсеткішін 3.0-ге жеткізу | 3"), { title: "ERF көрсеткішін 3.0-ге жеткізу", target: 3, isPercent: false });
+  assert.deepEqual(parseGoalLine("- Инстаграм жүргізу (1 пост, 1 рилс)"), { title: "Инстаграм жүргізу (1 пост, 1 рилс)", target: 100, isPercent: true });
+  assert.deepEqual(parseFacts("100 80 = 1,66"), [100, 80, null, 1.66]);
+  assert.deepEqual(parseFacts("1) 100%\n2) 72%\n3) 1.66"), [100, 72, 1.66]);
+  assert.deepEqual(parseFacts("1-100 2-50"), [100, 50]);
+  assert.deepEqual(parseProofs("2 https://vt.tiktok.com/a\n11: дәлел"), { 2: "https://vt.tiktok.com/a", 11: "дәлел" });
+  // Кестедегі мысалдар: 96% / 95% мақсат → 100%; 30%/30% → 100%; 1,66/3 → 55%; 72/100 → 72%
+  assert.equal(conversion({ target: 95 }, 96), 100);
+  assert.equal(conversion({ target: 30 }, 30), 100);
+  assert.equal(conversion({ target: 3 }, 1.66), 55);
+  assert.equal(conversion({ target: 100 }, 72), 72);
+  // Асылжан, тамыз: оп. 100,100,100,100,100,93,100,72,66 → 92%; страт. 100% → ортақ 96%
+  const g = (kind: string, fact: number) => ({ kind, target: 100, fact }) as any;
+  const s = summary([...[100, 100, 100, 100, 100, 93, 100, 72, 66].map((f) => g("op", f)), g("strat", 100)]);
+  assert.deepEqual([s.op, s.strat, s.overall], [92, 100, 96]);
+});
+
+test("апта қорытындысы: префикспен және ретімен", async () => {
+  const { parseNotes } = await import("../src/services/figmaExport.js");
+  assert.deepEqual(parseNotes("Мәселе: файл кеш келді\nШешімі: ертерек сұрадым\nЖетістік: -\nҰсыныс: шаблон жасау"),
+    { problem: "файл кеш келді", solution: "ертерек сұрадым", achievement: null, idea: "шаблон жасау" });
+  assert.deepEqual(parseNotes("-\n-\nIELTS обложкалары бекітілді\n-"), { problem: null, solution: null, achievement: "IELTS обложкалары бекітілді", idea: null });
+});

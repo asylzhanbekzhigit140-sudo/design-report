@@ -19,6 +19,9 @@ import { publishWeek, resetSheetsClient } from "../src/services/sheets.js";
 import { findNewTzIssues } from "../src/services/tzcheck.js";
 import { generateKeyPairSync, createHmac } from "node:crypto";
 import { startWebServer, verifyInitData } from "../src/web/server.js";
+import { addGoals, copyPrevMonth, goalsWithProgress, saveFacts, saveProof, summary, goalsBlock, monthOf, prevMonth } from "../src/services/goals.js";
+import { importGoalsXlsx } from "../src/bot/goalsBot.js";
+import { buildWeekPayload, exportWeekToGitHub, saveNotes } from "../src/services/figmaExport.js";
 
 const URL_ = process.env.DATABASE_URL;
 const skip = !URL_;
@@ -127,7 +130,8 @@ test("sync → есептеу → жауап → түзету → Excel", { skip
   const { buffer } = await buildWeekWorkbook(thisMon.monday);
   const wb = new ExcelJS.Workbook();
   await wb.xlsx.load(buffer as any);
-  assert.deepEqual(wb.worksheets.map((w) => w.name), ["ПӘН АКК", "ИНСТА АКК", "ӨЗГЕ ЖҰМЫСТАР", "СКРИН", "ДЕТАЛЬ", "ТЕКСЕРУ"]);
+  assert.deepEqual(wb.worksheets.map((w) => w.name), ["ПӘН АКК", "ИНСТА АКК", "ӨЗГЕ ЖҰМЫСТАР", "СКРИН", "ДЕТАЛЬ", "ТЕКСЕРУ",
+    "АЙЛЫҚ МАҚСАТ", "АЙЛЫҚ МАҚСАТ %", "МАҚСАТ КОНВЕРСИЯСЫ", "ОРЫНДАЛҒАН МАҚСАТТАР", "ҰНАҒАН ЖҰМЫСТАР"]);
   const pan = wb.getWorksheet("ПӘН АКК")!;
   const header = pan.getRow(4).values as any[];
   const col = header.indexOf("АҒЫЛШЫН");
@@ -223,4 +227,102 @@ test("sync → есептеу → жауап → түзету → Excel", { skip
   assert.match(hr.text, /Тапсырма орындалды\. Дәлел скриншотта көрсетілген\./);
 
   assert.equal(await askAI({ id: 1, name: "x", yougile_id: ME, isAdmin: false, telegram_id: 1 }, "сәлем"), "AI-сұрақтар әлі қосылмаған.");
+});
+
+test("айлық мақсаттар: енгізу → факт → конверсия → Excel → өткен айдан көшіру → кестеден импорт", { skip }, async () => {
+  await connect(URL_!);
+  const mon = thisMon.monday, month = monthOf(mon);
+  await q("DELETE FROM goals");
+  // Асылжанның қыркүйек мақсаттарына ұқсас: 95%, 100%, сандық ERF 3
+  await addGoals(ME, month, "op", [
+    { title: "Өнімділікті 95%-дан түсірмеу", target: 95, isPercent: true },
+    { title: "Берілген тапсырмаларды 100% уақытылы орындау", target: 100, isPercent: true },
+    { title: "Online ERF көрсеткішін 3.0-ге жеткізу", target: 3, isPercent: false },
+  ], "test");
+  await addGoals(ME, month, "strat", [{ title: "IELTS видеосабақ материалдарын дайындау", target: 100, isPercent: true }], "test");
+  let rows = await goalsWithProgress(ME, mon);
+  assert.equal(rows.length, 4);
+  await saveFacts(rows, [100, 72, 1.66, 100], mon, "test");
+  await saveProof(rows[0].id, mon, "https://figma.com/x");
+  rows = await goalsWithProgress(ME, mon);
+  const s = summary(rows);
+  // 100, 72, 55 → оп. 76%; страт. 100%; ортақ = (76+100)/2 = 88%
+  assert.deepEqual([s.op, s.strat, s.overall, s.done, s.total], [76, 100, 88, 2, 4]);
+  assert.equal(rows[0].proof, "https://figma.com/x");
+  assert.match(await goalsBlock(ME, mon), /88%.*2\/4/);
+
+  const { buffer } = await buildWeekWorkbook(mon);
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.load(buffer as any);
+  const conv = wb.getWorksheet("МАҚСАТ КОНВЕРСИЯСЫ")!;
+  const asyl = conv.getRows(3, 15)!.find((r) => String(r.getCell(1).value).includes("БЕКЖІГІТ"))!;
+  assert.equal(asyl.getCell(4).value, 0.88);
+  const done = wb.getWorksheet("ОРЫНДАЛҒАН МАҚСАТТАР")!;
+  assert.equal(done.rowCount, 4); // тақырып + бас жол + 2 орындалған
+
+  // Келесі айға көшіру
+  const next = month.endsWith("12") ? `${Number(month.slice(0, 4)) + 1}-01` : `${month.slice(0, 5)}${String(Number(month.slice(5)) + 1).padStart(2, "0")}`;
+  assert.equal(prevMonth(next), month);
+  assert.equal(await copyPrevMonth(ME, next, "test"), 4);
+  assert.equal((await q("SELECT 1 FROM goals WHERE designer_yid=$1 AND month=$2", [ME, next])).length, 4);
+
+  // Кестеден импорт (Google Sheets → xlsx пішіні)
+  await q("DELETE FROM goals WHERE designer_yid=$1 AND month=$2", [ME, month]);
+  const M = ["ҚАҢТАР","АҚПАН","НАУРЫЗ","СӘУІР","МАМЫР","МАУСЫМ","ШІЛДЕ","ТАМЫЗ","ҚЫРКҮЙЕК","ҚАЗАН","ҚАРАША","ЖЕЛТОҚСАН"][Number(month.slice(5)) - 1];
+  const src = new ExcelJS.Workbook();
+  const ws = src.addWorksheet("Бекжігіт Асылжан");
+  const put = (r: number, vals: any[]) => vals.forEach((v, i) => { if (v !== undefined) ws.getCell(r, i + 1).value = v; });
+  put(1, [, , "ҚЫЗМЕТІ АЙЛЫҚ МАҚСАТТАР КОНВЕРСИЯСЫ 2026-2027"]);
+  put(3, [, , `${M} - АЙЛЫҚ МАҚСАТТАР КОНВЕРСИЯСЫ`]);
+  put(4, [, , "Операционный мақсаттар", , "Бастапқы көрсеткіш", "Мақсат", "Факт", "Конверсия", "Дәлел"]);
+  put(5, [, , 1, "Өнімділікті 95%-дан түсірмеу", 0, 0.95, 1, 1, "ӨНІМДІЛІК"]);
+  put(6, [, , 2, "ERF 3.0", 0, 3, "1,66", 0.55]);
+  put(7, [, , 3, "", 0, 1, 0, 0]);
+  put(8, [, , "    Операционный мақсаттар:"]);
+  put(10, [, , "Стратегиялық мақсаттар", , "Бастапқы көрсеткіш", "Мақсат", "Факт", "Конверсия", "Дәлел"]);
+  put(11, [, , 1, "IELTS видеосабақ", 0, 1, 1, 1]);
+  put(12, [, , "Ортақ көрсеткіш:"]);
+  for (const r of [5, 11]) for (const c of [5, 6, 7, 8]) ws.getCell(r, c).numFmt = "0%";
+  ws.getCell(6, 6).numFmt = "General";
+  const report = await importGoalsXlsx(Buffer.from(await src.xlsx.writeBuffer()), month, mon, "test");
+  assert.match(report.join("\n"), /3 мақсат \(2 оп\. · 1 страт\.\)/);
+  rows = await goalsWithProgress(ME, mon);
+  assert.deepEqual(rows.map((g) => [g.kind, g.target, g.is_percent, g.fact]), [["op", 95, true, 100], ["op", 3, false, 1.66], ["strat", 100, true, 100]]);
+  assert.equal(summary(rows).overall, 89); // оп. (100+55)/2=78 → (78+100)/2 = 89
+  // Қайта импорт — бар мақсаттарды өзгертпейді
+  assert.match((await importGoalsXlsx(Buffer.from(await src.xlsx.writeBuffer()), month, mon, "test")).join(""), /өзгертілмеді/);
+  await close();
+});
+
+test("Figma есебіне деректер: payload → GitHub (mock)", { skip }, async () => {
+  await connect(URL_!);
+  const mon = thisMon.monday;
+  await saveNotes(ME, mon, { problem: "кеш ТЗ", solution: null, achievement: "IELTS бекітілді", idea: null });
+  const { payload } = await buildWeekPayload(mon);
+  const a = payload.designers.find((d: any) => d.excelName === "Бекжігіт")!;
+  assert.equal(a.fullName, "БЕКЖІГІТ АСЫЛЖАН");
+  assert.ok(a.works.length > 0 && a.works.every((w: string) => / - \d+/.test(w)), a.works.join("|"));
+  assert.equal(a.notes.achievement, "IELTS бекітілді");
+  assert.ok(a.goals.length > 0 && typeof a.conversion.overall === "number");
+
+  const files = new Map<string, string>();
+  const srv = http.createServer((req, res) => {
+    let b = ""; req.on("data", (c) => (b += c)); req.on("end", () => {
+      const u = decodeURIComponent(req.url!);
+      res.setHeader("content-type", "application/json");
+      if (u.includes("/branches/")) { res.statusCode = 404; return res.end("{}"); }
+      if (u.endsWith("/git/refs") && req.method === "POST") { res.statusCode = 201; return res.end("{}"); }
+      if (u.includes("/git/ref/heads/")) return res.end(JSON.stringify({ object: { sha: "abc" } }));
+      if (u.includes("/contents/") && req.method === "PUT") { const j = JSON.parse(b); files.set(u.split("/contents/")[1], Buffer.from(j.content, "base64").toString()); assert.equal(j.branch, "reports"); res.statusCode = 201; return res.end("{}"); }
+      if (u.includes("/contents/")) { res.statusCode = 404; return res.end("{}"); }
+      return res.end(JSON.stringify({ default_branch: "main" }));
+    });
+  }).listen(4561);
+  process.env.GITHUB_TOKEN = "t"; process.env.GITHUB_API = "http://localhost:4561";
+  const r = await exportWeekToGitHub(mon, "test");
+  srv.close();
+  assert.equal(r.designers, payload.designers.length);
+  assert.equal(files.get("weeks/latest.txt")?.trim(), mon);
+  assert.equal(JSON.parse(files.get(`weeks/${mon}/data.json`)!).monday, mon);
+  await close();
 });

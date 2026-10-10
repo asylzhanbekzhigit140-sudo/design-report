@@ -13,6 +13,8 @@ import { weekOf, weekRangeText, weekFromMonday } from "../time/week.js";
 void weekRangeText;
 import { config } from "../config.js";
 import { askAI } from "../services/ai.js";
+import { registerGoals, GOALS_BTN, clearGoalState } from "./goalsBot.js";
+import { goalsBlock, teamGoalsLine } from "../services/goals.js";
 import { publishOpenWeeks, publishWeek, sheetUrl, sheetsClient } from "../services/sheets.js";
 import { designerCard, teamCard } from "../services/card.js";
 
@@ -72,7 +74,8 @@ async function sendDesignerWeek(bot: Bot, chatId: number, p: Person, monday: str
   } catch (e: any) {
     console.error("card:", e.message);
   }
-  await bot.api.sendMessage(chatId, designerReportText(p.name, monday, rows, prev), { parse_mode: "HTML", reply_markup: weeklyKeyboard(monday) });
+  const goals = await goalsBlock(p.yougile_id!, monday).catch(() => "");
+  await bot.api.sendMessage(chatId, designerReportText(p.name, monday, rows, prev) + (goals ? `\n${goals}` : ""), { parse_mode: "HTML", reply_markup: weeklyKeyboard(monday) });
 }
 
 /**
@@ -114,7 +117,8 @@ async function sendTeamWeek(bot: Bot, chatId: number, monday: string) {
   } catch (e: any) {
     console.error("card:", e.message);
   }
-  const text = await adminSummaryText(monday);
+  const goals = await teamGoalsLine(monday).catch(() => "");
+  const text = (await adminSummaryText(monday)) + (goals ? `\n${goals}` : "");
   await bot.api.sendMessage(chatId, text, { parse_mode: "HTML", ...(WEBAPP_URL ? { reply_markup: new InlineKeyboard().webApp("📱 Қосымшада ашу", WEBAPP_URL) } : {}) });
 }
 
@@ -203,12 +207,13 @@ export async function sendHrPrep(bot: Bot) {
 // ---------- Мәзір ----------
 export const BTN = { week: "📊 Осы апта", last: "📅 Өткен апта", tasks: "📋 Ашық тапсырмаларым", help: "❓ Көмек" };
 export const menu = () =>
-  new Keyboard().text(BTN.week).text(BTN.last).row().text(BTN.tasks).text(BTN.help).resized().persistent();
+  new Keyboard().text(BTN.week).text(BTN.last).row().text(BTN.tasks).text(GOALS_BTN).row().text(BTN.help).resized().persistent();
 
 export const USER_COMMANDS = [
   { command: "me", description: "Осы аптадағы есебім" },
   { command: "hr", description: "HR есебіне дайын тізім (бүгін)" },
   { command: "last", description: "Өткен аптадағы есебім" },
+  { command: "goals", description: "Айлық мақсаттарым" },
   { command: "tasks", description: "Ашық тапсырмаларым" },
   { command: "help", description: "Көмек және сұрақ мысалдары" },
 ];
@@ -227,6 +232,9 @@ export const ADMIN_COMMANDS = [
   { command: "people", description: "Админ: адамдар тізімі" },
   { command: "sync", description: "Админ: қазір синхронизация" },
   { command: "recalc", description: "Админ: ережелер бойынша қайта есептеу" },
+  { command: "goals_team", description: "Админ: бөлімнің айлық мақсат конверсиясы" },
+  { command: "import_goals", description: "Админ: мақсат кестесін (xlsx) жүктеу" },
+  { command: "export_figma", description: "Админ: Figma есебіне деректерді салу" },
 ];
 
 export const BOSS_COMMANDS = [{ command: "msg", description: "Қызметкерлерге хабарлама жіберу" }];
@@ -257,6 +265,7 @@ const HELP = (admin: boolean) => `<b>Бот не істей алады</b>
 ${BTN.week} — осы аптадағы есебің (дүйсенбіден бүгінге дейін)
 ${BTN.last} — өткен аптаның есебі
 ${BTN.tasks} — YouGile-де әлі ✓ болмаған тапсырмаларың, дедлайнымен
+${GOALS_BTN} — айлық мақсаттар: енгізу, сенбі сайын факт, дәлел, ұнаған жұмыстар
 Есептің астындағы <b>✏️ Қате бар</b> — санды түзету
 
 <b>Сұрақты жай мәтінмен жаза бер</b>, мысалы:
@@ -292,6 +301,9 @@ export async function openTasksText(p: Person) {
 
 export function createBot(token: string, hooks: { runSync: () => Promise<string> }) {
   const bot = new Bot(token);
+
+  // Айлық мақсаттар (өз хабарлама ағыны бар — негізгі диалогтардан бұрын тіркеледі)
+  registerGoals(bot, { clearMain: (tg) => state.delete(tg), hasMain: (tg) => state.has(tg), isAdmin });
 
   // ---------- Тіркелу ----------
   bot.command("start", async (ctx) => {
@@ -798,7 +810,8 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
     const s = state.get(ctx.from.id);
     if (ctx.message.text?.startsWith("/")) return next();
     if (ctx.message.text && Object.values(BTN).includes(ctx.message.text)) {
-      if (s?.kind === "msgText" || s?.kind === "reply") state.delete(ctx.from.id);
+      state.delete(ctx.from.id);
+      clearGoalState(ctx.from.id);
       return next();
     }
     if (s?.kind === "msgText") {

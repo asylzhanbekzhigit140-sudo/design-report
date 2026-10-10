@@ -4,6 +4,7 @@ import { q, one } from "../db/db.js";
 import { weekRows, COUNTED, type ReportRow } from "./reports.js";
 import { subjectFor, DESIGNERS, WORK_TYPES } from "../seed/catalog.js";
 import { weekFromMonday, weekRangeText } from "../time/week.js";
+import { addGoalSheets } from "./goalsExcel.js";
 
 export const PAN = ["ТАРИХ МС", "ДЖТ", "АҒЫЛШЫН", "МАТ", "ӘДЕБТІЛ", "БИОЛОГИЯ", "ГЕОГРАФИЯ", "ФИЗИКА", "ХИМИЯ", "РУСЛИТ", "ҚҰҚЫҚ", "ИНФО"];
 export const INSTA = ["JUNIOR", "JUZ40 ONL", "COMM", "CAREER", "TEAM", "OYKOZ", "IELTS", "JUZ40 STORE"];
@@ -135,6 +136,8 @@ export async function buildWeekWorkbook(monday: string): Promise<{ buffer: Buffe
   det.getColumn(6).width = 40;
   rev.getColumn(2).width = 40;
   rev.getColumn(5).width = 60;
+
+  await addGoalSheets(wb, monday).catch((e) => console.error("goal sheets:", e.message));
 
   const buffer = Buffer.from(await wb.xlsx.writeBuffer());
   return { buffer, filename: `DESIGN_${label.replace(/\s+/g, "_")}_${monday}.xlsx` };

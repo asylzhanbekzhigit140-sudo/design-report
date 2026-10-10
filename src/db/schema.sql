@@ -155,3 +155,48 @@ CREATE TABLE IF NOT EXISTS cover_checks (
   asked_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
   answer    TEXT
 );
+
+-- v7: айлық мақсаттар («АЙЛЫҚ МАҚСАТТАР КОНВЕРСИЯСЫ» кестесінің пішіні), апталық факт, ұнаған жұмыстар
+CREATE TABLE IF NOT EXISTS goals (
+  id           SERIAL PRIMARY KEY,
+  designer_yid TEXT NOT NULL,
+  month        TEXT NOT NULL,                       -- YYYY-MM (апта дүйсенбісі түскен ай)
+  kind         TEXT NOT NULL DEFAULT 'op' CHECK (kind IN ('op','strat')),
+  pos          INTEGER NOT NULL,
+  title        TEXT NOT NULL,
+  base         NUMERIC NOT NULL DEFAULT 0,          -- Бастапқы көрсеткіш
+  target       NUMERIC NOT NULL DEFAULT 100,        -- Мақсат (100 = 100%, 3 = ERF 3.0)
+  is_percent   BOOLEAN NOT NULL DEFAULT true,
+  active       BOOLEAN NOT NULL DEFAULT true,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS goals_designer_month ON goals (designer_yid, month);
+CREATE TABLE IF NOT EXISTS goal_progress (
+  goal_id    INTEGER NOT NULL REFERENCES goals(id) ON DELETE CASCADE,
+  week       DATE NOT NULL,
+  fact       NUMERIC NOT NULL CHECK (fact >= 0),
+  proof      TEXT,                                  -- Дәлел (сілтеме)
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (goal_id, week)
+);
+CREATE TABLE IF NOT EXISTS liked_works (
+  id           SERIAL PRIMARY KEY,
+  designer_yid TEXT NOT NULL,
+  week         DATE NOT NULL,
+  file_id      TEXT NOT NULL,
+  caption      TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS liked_designer_week ON liked_works (designer_yid, week);
+
+-- v8: апта қорытындысы (Figma апталық есебіндегі «Мәселе / Шешімі / Жетістік / Ұсыныс» слайды)
+CREATE TABLE IF NOT EXISTS weekly_notes (
+  designer_yid TEXT NOT NULL,
+  week         DATE NOT NULL,
+  problem      TEXT,
+  solution     TEXT,
+  achievement  TEXT,
+  idea         TEXT,
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (designer_yid, week)
+);

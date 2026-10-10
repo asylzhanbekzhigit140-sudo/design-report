@@ -7,6 +7,7 @@ import { dirname, join } from "node:path";
 pg.types.setTypeParser(20, (v) => Number(v));
 // DATE → "YYYY-MM-DD" жолы күйінде (уақыт белдеуінсіз)
 pg.types.setTypeParser(1082, (v) => v);
+pg.types.setTypeParser(1700, (v) => Number(v)); // NUMERIC → number (мақсат мәндері)
 
 let pool: pg.Pool | null = null;
 
