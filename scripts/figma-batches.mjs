@@ -13,6 +13,7 @@ const gen = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "figma-we
 const FIRST_MONTH = Number(process.env.FIRST_MONTH || 7);
 const [yy, mm, dd] = data.monday.split("-").map(Number);
 const page = `${((mm - FIRST_MONTH + 12) % 12) + 1} ай ${Math.ceil(dd / 7)} апта`;
+const label = page.toUpperCase().replace(/ (АЙ|АПТА)/g, "-$1"); // «4 ай 1 апта» → «4-АЙ 1-АПТА» (слайдтағы белгі)
 mkdirSync(out, { recursive: true });
 const slim = (d) => ({
   name: d.name, fullName: d.fullName, tasks: d.tasks, totals: d.totals, works: d.works, notes: d.notes, conversion: d.conversion,
@@ -21,11 +22,11 @@ const slim = (d) => ({
 });
 const files = [];
 for (let i = 0; i < data.designers.length; i += 3) {
-  const DATA = { page, reset: i === 0, startIndex: i, label: data.label, range: data.range, month: data.month, designers: data.designers.slice(i, i + 3).map(slim) };
+  const DATA = { page, reset: i === 0, startIndex: i, label, range: data.range, month: data.month, designers: data.designers.slice(i, i + 3).map(slim) };
   const code = `const DATA = ${JSON.stringify(DATA)};\n${gen}`;
   if (code.length > 49000) throw new Error(`Бөлік ${i / 3 + 1} тым үлкен (${code.length})`);
   const f = join(out, `batch-${i / 3 + 1}.js`);
   writeFileSync(f, code);
   files.push(f);
 }
-console.log(JSON.stringify({ page, label: data.label, designers: data.designers.length, batches: files }));
+console.log(JSON.stringify({ page, label, designers: data.designers.length, batches: files }));

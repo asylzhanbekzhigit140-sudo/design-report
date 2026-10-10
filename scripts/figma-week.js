@@ -81,11 +81,13 @@ DATA.designers.forEach((d, k) => {
       const r = i === 0 ? proto : proto.clone();
       if (i > 0) list.appendChild(r);
       set(r, "{g-n}", String(goal.n).padStart(2, "0"));
-      set(r, "{g-title}", goal.kind === "strat" ? `${goal.title}  · стратегиялық` : goal.title);
+      const sfx = goal.kind === "strat" ? "  · страт." : "", max = 74 - sfx.length; // бір жолға сыйсын
+      const tt = String(goal.title).replace(/\s+/g, " ").trim();
+      set(r, "{g-title}", (tt.length > max ? tt.slice(0, max - 1).trimEnd() + "…" : tt) + sfx);
       set(r, "{g-val}", `${goal.conversion}%`);
       const bar = r.findOne((n) => n.name === "g-bar");
       bar.resize(Math.max(0.01, (220 * goal.conversion) / 100), 10);
-      if (goal.conversion <= 0) bar.visible = false;
+      bar.visible = goal.conversion > 0; // клон алдыңғы жолдың «жасырын» күйін алмасын
     });
   }
   // 6. Конверсия
