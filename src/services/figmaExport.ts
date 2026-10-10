@@ -11,6 +11,7 @@ import { weekRows, COUNTED } from "./reports.js";
 import { subjectFor, DESIGNERS, FULL_NAMES, WORK_TYPES } from "../seed/catalog.js";
 import { weekFromMonday, weekRangeText, weekLabel } from "../time/week.js";
 import { config } from "../config.js";
+import { subjectLines } from "./reportLabels.js";
 import { goalsWithProgress, summary, conversion, likedOf, downloadTelegramFile, monthName, monthOf } from "./goals.js";
 
 export type Notes = { problem: string | null; solution: string | null; achievement: string | null; idea: string | null };
@@ -44,20 +45,6 @@ export async function saveNotes(yid: string, monday: string, n: Notes) {
   );
 }
 
-const UNIT: Record<string, string> = { Пост: "пост", Карусель: "карусель" };
-
-/** Слайдқа: «әдебтіл - 1 пост», «обложка - 4 шт» */
-function workLines(items: Map<string, Record<string, number>>) {
-  const out: string[] = [];
-  for (const [subj, it] of items)
-    for (const wt of WORK_TYPES) {
-      const n = it[wt];
-      if (!n) continue;
-      out.push(UNIT[wt] ? `${subj.toLowerCase()} - ${n} ${UNIT[wt]}` : `${subj.toLowerCase()} ${wt.toLowerCase()} - ${n} шт`);
-    }
-  return out;
-}
-
 export async function buildWeekPayload(monday: string) {
   const w = weekFromMonday(monday);
   const label = (await one<{ label: string }>("SELECT label FROM weeks WHERE monday=$1", [monday]))?.label ?? weekLabel(w, config.month1);
@@ -89,7 +76,7 @@ export async function buildWeekPayload(monday: string) {
       name: p.name,
       excelName: p.excel_name,
       fullName: FULL_NAMES[p.excel_name] ?? p.name.toUpperCase(),
-      works: workLines(bySubj),
+      works: subjectLines(rows),
       totals,
       tasks: rows.length,
       liked,

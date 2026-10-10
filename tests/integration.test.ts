@@ -301,7 +301,7 @@ test("Figma есебіне деректер: payload → GitHub (mock)", { skip 
   const { payload } = await buildWeekPayload(mon);
   const a = payload.designers.find((d: any) => d.excelName === "Бекжігіт")!;
   assert.equal(a.fullName, "БЕКЖІГІТ АСЫЛЖАН");
-  assert.ok(a.works.length > 0 && a.works.every((w: string) => / - \d+/.test(w)), a.works.join("|"));
+  assert.ok(a.works.length > 0 && a.works.every((w: string) => /^[^»]+ — \d+ [^,]+(, \d+ .+)*$/.test(w)), a.works.join("|"));
   assert.equal(a.notes.achievement, "IELTS бекітілді");
   assert.ok(a.goals.length > 0 && typeof a.conversion.overall === "number");
 

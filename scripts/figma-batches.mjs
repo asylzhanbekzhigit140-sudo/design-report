@@ -8,7 +8,11 @@ const [dataPath, hashPath, out] = process.argv.slice(2);
 const data = JSON.parse(readFileSync(dataPath, "utf8"));
 const hashes = hashPath && hashPath !== "-" ? JSON.parse(readFileSync(hashPath, "utf8")) : {};
 const gen = readFileSync(join(dirname(fileURLToPath(import.meta.url)), "figma-week.js"), "utf8");
-const page = data.label.toLowerCase().replace(/-/g, " ").replace(/\s+/g, " ").trim(); // «4-АЙ 2-АПТА» → «4 ай 2 апта»
+// Бет атауы файлдағы үлгімен: «4 ай 1 апта». Оқу жылы шілдеден басталады: шілде = 1 ай … қазан = 4 ай.
+// Апта нөмірі — дүйсенбісі сол айдың нешінші дүйсенбісі екені (5 қазан → 1 апта).
+const FIRST_MONTH = Number(process.env.FIRST_MONTH || 7);
+const [yy, mm, dd] = data.monday.split("-").map(Number);
+const page = `${((mm - FIRST_MONTH + 12) % 12) + 1} ай ${Math.ceil(dd / 7)} апта`;
 mkdirSync(out, { recursive: true });
 const slim = (d) => ({
   name: d.name, fullName: d.fullName, tasks: d.tasks, totals: d.totals, works: d.works, notes: d.notes, conversion: d.conversion,

@@ -42,7 +42,14 @@ DATA.designers.forEach((d, k) => {
   };
   // 1. Титул
   const t = place("01");
-  set(t, "{label-big}", DATA.label.replace(" ", "\n")); set(t, "{fullName}", d.fullName); set(t, "{range}", `${DATA.range} · Дизайн бөлімі`);
+  set(t, "{label-big}", DATA.label.replace(" ", "\n"));
+  for (const big of t.findAll((n) => n.type === "TEXT" && n.name === "{label-big}")) { // «ҚЫРКҮЙЕК» сияқты ұзын ай сыйсын
+    const W = big.width, mode = big.textAutoResize; let fs = big.fontSize;
+    big.textAutoResize = "WIDTH_AND_HEIGHT";
+    while (big.width > W && fs > 40) { fs -= 4; big.fontSize = fs; }
+    if (mode !== "WIDTH_AND_HEIGHT") { big.resize(W, big.height); big.textAutoResize = mode === "NONE" ? "HEIGHT" : mode; }
+  }
+  set(t, "{fullName}", d.fullName); set(t, "{range}", `${DATA.range} · Дизайн бөлімі`);
   // 2. Жұмыстар
   const w = place("02");
   const total = Object.values(d.totals || {}).reduce((a, b) => a + b, 0);
@@ -89,5 +96,6 @@ DATA.designers.forEach((d, k) => {
   const ring = c.findOne((n) => n.name === "ring");
   const p = Math.max(0.001, Math.min(1, (cv.total ? cv.overall : 0) / 100));
   ring.arcData = { startingAngle: -Math.PI / 2, endingAngle: -Math.PI / 2 + 2 * Math.PI * p, innerRadius: 0.78 };
+  if (!cv.total || !cv.overall) ring.visible = false; // 0% болса сызықша қалмасын
 });
 return { page: page.id, created: created.length, ids: created };
