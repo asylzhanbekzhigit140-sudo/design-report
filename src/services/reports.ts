@@ -14,14 +14,29 @@ export type ReportRow = {
 export const COUNTED = new Set(["ok", "corrected", "ask_designer"]);
 const OPEN = new Set(["ask_designer", "no_files", "needs_review"]);
 
-export const weekRows = (monday: string, designerYid?: string) =>
-  q<ReportRow>(
+/** Апта тапсырмалары: YouGile-ден есептелгендер + дизайнер өзі қосқан жұмыстар (id < 0, trace.added) */
+export async function weekRows(monday: string, designerYid?: string): Promise<ReportRow[]> {
+  const rows = await q<ReportRow>(
     `SELECT c.*, p.name AS designer, p.excel_name, t.completed_at
        FROM calculations c JOIN people p ON p.yougile_id=c.designer_yid JOIN tasks t ON t.yougile_id=c.task_id
       WHERE c.week=$1 AND ($2::text IS NULL OR c.designer_yid=$2)
       ORDER BY p.name, t.completed_at`,
     [monday, designerYid ?? null],
   );
+  const added = await q<any>(
+    `SELECT m.*, p.name AS designer, p.excel_name FROM manual_works m JOIN people p ON p.yougile_id=m.designer_yid
+      WHERE m.week=$1 AND ($2::text IS NULL OR m.designer_yid=$2) ORDER BY m.id`,
+    [monday, designerYid ?? null],
+  );
+  for (const m of added)
+    rows.push({
+      id: -m.id, task_id: `manual-${m.id}`, designer_yid: m.designer_yid, designer: m.designer, excel_name: m.excel_name,
+      status: "ok", items: m.items, file_count: 0, ask_count: 0, rule_code: "ADDED", reasons: [], warnings: [],
+      trace: { title: m.note || `${m.subject} (өзі қосты)`, location: m.loc ?? null, added: true, subject: m.subject },
+      is_supplement: false, answer: null, manual: true, completed_at: m.created_at,
+    });
+  return rows;
+}
 
 export type Totals = Map<string, { sheet: SheetName; items: Record<string, number> }>;
 
@@ -96,8 +111,10 @@ export function designerReportText(name: string, monday: string, rows: ReportRow
     const cmp = compareText(rows, prevRows);
     if (cmp) out.push(cmp);
   }
-  const counted = rows.filter((r) => COUNTED.has(r.status)).length;
+  const counted = rows.filter((r) => COUNTED.has(r.status) && !r.trace?.added).length;
   out.push(`✅ ${counted} тапсырма YouGile-ден автоматты есептелді`);
+  const added = rows.filter((r) => r.trace?.added);
+  if (added.length) out.push(`➕ Өзің қостың: ${added.map((r) => esc(`${r.trace.subject} — ${fmtItems(r.items)}`)).join("; ")}`);
   const open = rows.filter((r) => OPEN.has(r.status)).length;
   if (open) out.push(`⚠️ ${open} тапсырма шешілмеген — «Толығырақ»`);
   return out.join("\n");

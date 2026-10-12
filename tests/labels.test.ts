@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { subjectLines } from "../src/services/reportLabels.js";
+import { subjectLines, parseWorkItems, findSubject } from "../src/services/reportLabels.js";
 
 const L = (project: string, board: string, column: string) => ({ project, board, column });
 
@@ -13,4 +13,13 @@ test("Есеп жолдары: пән бір жолда, YouGile атауы ем
     { trace: { title: "Ұстаздар күні", location: L("HR", "Т", "тз") }, items: { Баннер: 2 } },
   ]);
   assert.deepEqual(lines, ["Химия — 3 пост, 10 карусель", "YouTube — 4 обложка", "Физика — 2 таргет баннер", "HR — 2 баннер"]);
+});
+
+test("➕ Тапсырма қосу: «Құқық 2 пост 5 карусель» талдау", () => {
+  assert.equal(findSubject("Құқық 2 пост 5 карусель")?.label, "Құқық");
+  assert.deepEqual(parseWorkItems("Құқық 2 пост 5 карусель"), { Пост: 2, Карусель: 5 });
+  assert.deepEqual(parseWorkItems("пост - 3, карусель 10"), { Пост: 3, Карусель: 10 });
+  assert.deepEqual(parseWorkItems("3 обложка", "YouTube"), { "YouTube обложка": 3 });
+  assert.deepEqual(parseWorkItems("2 таргет баннер 1 баннер"), { "Таргет баннер": 2, Баннер: 1 });
+  assert.equal(findSubject("материал 2 пост"), null);
 });

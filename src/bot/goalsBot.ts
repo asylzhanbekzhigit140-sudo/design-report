@@ -9,6 +9,7 @@ import ExcelJS from "exceljs";
 import { q, one } from "../db/db.js";
 import { weekOf } from "../time/week.js";
 import { esc } from "../services/reports.js";
+import { PICK, pickBySubject, findSubject, otherSubject, parseWorkItems, itemsText } from "../services/reportLabels.js";
 import { parseNotes, saveNotes, notesOf, NOTE_KEYS, NOTE_NAMES, exportWeekToGitHub, githubEnabled } from "../services/figmaExport.js";
 import {
   goalsWithProgress, goalsText, addGoals, copyPrevMonth, renameGoal, removeGoal, saveFacts, saveProof,
@@ -25,7 +26,9 @@ type GState =
   | { kind: "gOne"; monday: string; goalId: number }
   | { kind: "gProof"; monday: string }
   | { kind: "gLike"; monday: string }
-  | { kind: "gNotes"; monday: string };
+  | { kind: "gNotes"; monday: string }
+  | { kind: "wAdd"; monday: string; subject?: string }
+  | { kind: "wAddOk"; monday: string; subject: string; loc: any; items: Record<string, number> };
 const gstate = new Map<number, GState>();
 export const clearGoalState = (tg: number) => gstate.delete(tg);
 
@@ -36,12 +39,36 @@ const curMonday = () => weekOf(Date.now()).monday;
  * Есеп аптасы: факт, ұнаған жұмыс, қорытынды осы аптаға жазылады.
  * Дүйсенбі 12:00-ге дейін — өткен апта (Figma есебі 12:00-де жиналады), одан кейін — ағымдағы апта.
  */
+export const REPORT_CUTOFF_HOUR = 13; // дүйсенбі 13:00 — Figma деректері жиналады
 export function reportMonday(ms = Date.now()) {
   const local = new Date(ms + 5 * 3600_000);
-  const isMonMorning = local.getUTCDay() === 1 && local.getUTCHours() < 12;
+  const isMonMorning = local.getUTCDay() === 1 && local.getUTCHours() < REPORT_CUTOFF_HOUR;
   return isMonMorning ? weekOf(weekOf(ms).startMs - 1).monday : weekOf(ms).monday;
 }
 const thisMonday = () => reportMonday();
+/**
+ * «Есепке дайынмын» ағыны (дүйсенбі 12:15): дизайнер қай аптаны толтырып жатқаны.
+ * Ағын ішінде барлық қадам (ұнаған жұмыс, қорытынды, мақсат) осы аптаға жазылады.
+ */
+const wizard = new Map<number, string>();
+export const startWizard = (tg: number, monday: string) => wizard.set(tg, monday);
+export const inWizard = (tg: number) => wizard.has(tg);
+const weekFor = (tg: number) => wizard.get(tg) ?? thisMonday();
+let clearMainRef: (tg: number) => void = () => {};
+
+/** ⭐ Ұнаған жұмыс сұрауы (ағын ішінде — 2-қадам) */
+export async function likedPrompt(bot: Bot, chatId: number, tg: number, p: { yougile_id: string | null }) {
+  const monday = weekFor(tg);
+  const n = (await likedOf(p.yougile_id!, monday)).length;
+  clearMainRef(tg);
+  gstate.set(tg, { kind: "gLike", monday });
+  await bot.api.sendMessage(
+    chatId,
+    (inWizard(tg) ? "2️⃣ <b>Ұнаған жұмыстар</b>\n" : "") +
+      `⭐ Осы аптада ұнаған жұмысыңды жібер — ${MAX_LIKED} суретке дейін (фото ретінде). Астына қысқа сипаттама жазуға болады.${n ? `\nҚазір жіберілгені: ${n}.` : ""}`,
+    { parse_mode: "HTML", reply_markup: new InlineKeyboard().text("✅ Дайын", "gld").text(n ? "🗑 Жіберілгенін тазалау" : "Өткізу", n ? "glc" : "gld") },
+  );
+}
 const personByTg = (id: number) => one<P>("SELECT * FROM people WHERE telegram_id=$1 AND active", [id]);
 
 const ADD_HELP = (k: Kind) =>
@@ -226,7 +253,11 @@ export async function importGoalsXlsx(buffer: Buffer, month: string, monday: str
 }
 
 // ---------- Обработчиктер ----------
-export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void; hasMain: (tg: number) => boolean; isAdmin: (p: any) => boolean }) {
+export function registerGoals(bot: Bot, deps: {
+  clearMain: (tg: number) => void; hasMain: (tg: number) => boolean; isAdmin: (p: any) => boolean;
+  resendWeek: (chatId: number, p: P, monday: string) => Promise<void>;
+}) {
+  clearMainRef = deps.clearMain;
   const me = async (ctx: Context) => {
     const p = await personByTg(ctx.from!.id);
     if (!p?.yougile_id) {
@@ -268,7 +299,7 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
     await ctx.answerCallbackQuery();
     const p = await me(ctx);
     if (!p) return;
-    if (!(await sendFactsList(bot, ctx.chat!.id, p.yougile_id!, thisMonday()))) await ctx.reply("Алдымен мақсат енгіз.");
+    if (!(await sendFactsList(bot, ctx.chat!.id, p.yougile_id!, weekFor(ctx.from!.id)))) await ctx.reply("Алдымен мақсат енгіз.");
   });
 
   // Бір мақсатты толтыру
@@ -276,7 +307,7 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
     await ctx.answerCallbackQuery();
     const p = await me(ctx);
     if (!p) return;
-    const monday = thisMonday();
+    const monday = weekFor(ctx.from!.id);
     const rows = await goalsWithProgress(p.yougile_id!, monday);
     const i = rows.findIndex((g) => g.id === Number(ctx.match[1]));
     if (i < 0) return;
@@ -310,7 +341,7 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
     const p = await me(ctx);
     if (!p) return;
     await ctx.editMessageReplyMarkup().catch(() => {});
-    await saveOne(ctx, p, Number(ctx.match[1]), thisMonday(), ctx.match[2] === "same" ? "same" : Number(ctx.match[2]));
+    await saveOne(ctx, p, Number(ctx.match[1]), weekFor(ctx.from!.id), ctx.match[2] === "same" ? "same" : Number(ctx.match[2]));
   });
 
   // Дайын — жалпы конверсия, сосын ұнаған жұмыс
@@ -318,7 +349,7 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
     await ctx.answerCallbackQuery();
     const p = await me(ctx);
     if (!p) return;
-    const monday = thisMonday();
+    const monday = weekFor(ctx.from!.id);
     const rows = await goalsWithProgress(p.yougile_id!, monday);
     const s = summary(rows);
     const left = rows.filter((g) => g.week_fact === null).length;
@@ -331,8 +362,50 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
         left ? `\n⚠️ ${left} мақсат осы апта толтырылмады — бұрынғы мәні алынады.` : "",
         "\nДүйсенбі Figma есебіне осы сандар түседі.",
       ].filter(Boolean).join("\n"),
-      { parse_mode: "HTML", reply_markup: new InlineKeyboard().text("⭐ Ұнаған жұмыс →", "gl").text("📎 Дәлел қосу", "gp") },
+      {
+        parse_mode: "HTML",
+        reply_markup: inWizard(ctx.from.id)
+          ? new InlineKeyboard().text("📤 Есепті жіберу", "wzs").row().text("📎 Дәлел қосу", "gp").text("↩️ Мақсаттар", "gf")
+          : new InlineKeyboard().text("⭐ Ұнаған жұмыс →", "gl").text("📎 Дәлел қосу", "gp").row().text("📤 Есепті жіберу", "wzs"),
+      },
     );
+  });
+
+  // 📤 Есепті жіберу — апталық есеп дайын: белгі қойылады, деректер GitHub-қа (Figma) жаңартылады, админге хабар
+  bot.callbackQuery("wzs", async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const p = await me(ctx);
+    if (!p) return;
+    const monday = weekFor(ctx.from.id);
+    await ctx.editMessageReplyMarkup().catch(() => {});
+    await q(
+      `INSERT INTO weekly_reports (week, designer_yid, status, confirmed_at, submitted_at) VALUES ($1,$2,'confirmed',now(),now())
+       ON CONFLICT (week, designer_yid) DO UPDATE SET submitted_at=now()`,
+      [monday, p.yougile_id],
+    ).catch((e) => console.error("submit:", e.message));
+    wizard.delete(ctx.from.id);
+    gstate.delete(ctx.from.id);
+    const rows = await goalsWithProgress(p.yougile_id!, monday);
+    const liked = (await likedOf(p.yougile_id!, monday)).length;
+    await ctx.reply(
+      `✅ <b>Есебің жіберілді!</b> Рақмет, ${esc(p.name)}.\n` +
+        `Жұмыстар · ${liked} ұнаған жұмыс · айлық мақсат ${rows.length ? summary(rows).overall + "%" : "—"} — бәрі Figma есебіне түседі.`,
+      { parse_mode: "HTML" },
+    );
+    if (githubEnabled()) void exportWeekToGitHub(monday, `tg:${ctx.from.id}`).catch((e) => console.error("export:", e.message));
+    // Админдерге: кім жіберді, неше адам қалды
+    const ds = await q<{ name: string; submitted: boolean }>(
+      `SELECT p.name, (w.submitted_at IS NOT NULL) AS submitted FROM people p
+         LEFT JOIN weekly_reports w ON w.designer_yid=p.yougile_id AND w.week=$1
+        WHERE p.role='designer' AND p.active AND p.telegram_id IS NOT NULL ORDER BY p.name`,
+      [monday],
+    );
+    const done = ds.filter((d) => d.submitted).length;
+    const left = ds.filter((d) => !d.submitted).map((d) => d.name);
+    const admins = await q<P>("SELECT * FROM people WHERE (role='admin' OR is_admin) AND telegram_id IS NOT NULL AND active");
+    for (const a of admins)
+      await bot.api.sendMessage(a.telegram_id!, `📤 ${p.name} апталық есебін жіберді (${done}/${ds.length}).` + (left.length ? `\nҚалғаны: ${left.join(", ")}` : "\n🎉 Барлығы жіберді!"))
+        .catch(() => {});
   });
 
   bot.callbackQuery(/^gfs$|^gfr$/, async (ctx) => {
@@ -355,9 +428,9 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
     await ctx.answerCallbackQuery();
     const p = await me(ctx);
     if (!p) return;
-    const rows = await goalsWithProgress(p.yougile_id!, thisMonday());
+    const rows = await goalsWithProgress(p.yougile_id!, weekFor(ctx.from!.id));
     if (!rows.length) return ctx.reply("Алдымен мақсат енгіз.");
-    start(ctx, { kind: "gProof", monday: thisMonday() });
+    start(ctx, { kind: "gProof", monday: weekFor(ctx.from!.id) });
     await ctx.reply(
       "📎 Дәлелді мақсат нөмірімен, әр жолға бір жаз:\n\n<code>2 https://vt.tiktok.com/...\n11 https://www.figma.com/...</code>\n\n" +
         rows.map((g, i) => `${i + 1}. ${esc(g.title)}${g.proof ? " 📎" : ""}`).join("\n"),
@@ -368,23 +441,26 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
   bot.callbackQuery("gl", async (ctx) => {
     await ctx.answerCallbackQuery();
     const p = await me(ctx);
-    if (!p) return;
-    const monday = thisMonday();
-    const n = (await likedOf(p.yougile_id!, monday)).length;
-    start(ctx, { kind: "gLike", monday });
-    await ctx.reply(
-      `⭐ Осы аптада ұнаған жұмысыңды жібер — ${MAX_LIKED} суретке дейін (фото ретінде). Астына қысқа сипаттама жазуға болады.${n ? `\nҚазір жіберілгені: ${n}.` : ""}`,
-      { reply_markup: new InlineKeyboard().text("✅ Дайын", "gld").text(n ? "🗑 Жіберілгенін тазалау" : "Өткізу", n ? "glc" : "gld") },
-    );
+    if (p) await likedPrompt(bot, ctx.chat!.id, ctx.from.id, p);
   });
+  /** Қорытындыдан кейін: ағын ішінде — 3-қадам (мақсат), әйтпесе мақсаттар мәзірі */
+  const afterNotes = async (ctx: Context, p: P) => {
+    const tg = ctx.from!.id;
+    if (!inWizard(tg)) {
+      await ctx.reply("✅ Аптаның деректері дайын. Рақмет!");
+      return showGoals(bot, ctx.chat!.id, p);
+    }
+    const ok = await sendFactsList(bot, ctx.chat!.id, p.yougile_id!, weekFor(tg), "3️⃣ <b>Айлық мақсат</b> — әр мақсатты басып, пайызын жаңарт. Соңында «✅ Дайын».");
+    if (!ok) await ctx.reply("3️⃣ Бұл айға мақсатың енгізілмеген. Есепті жібере бер:", { reply_markup: new InlineKeyboard().text("📤 Есепті жіберу", "wzs") });
+  };
   const notesPrompt = async (ctx: Context) => {
     const p = await me(ctx);
     if (!p) return;
-    const monday = thisMonday();
+    const monday = weekFor(ctx.from!.id);
     const cur = await notesOf(p.yougile_id!, monday);
     start(ctx, { kind: "gNotes", monday });
     await ctx.reply(
-      "📝 <b>Апта қорытындысы</b> — апталық есептің слайдына шығады. Төрт жолмен жаз, жоқ болса «-»:\n\n" +
+      (inWizard(ctx.from!.id) ? "2️⃣ <b>Апта қорытындысы</b>\n" : "") + "📝 <b>Апта қорытындысы</b> — апталық есептің слайдына шығады. Төрт жолмен жаз, жоқ болса «-»:\n\n" +
         "<code>Мәселе: …\nШешімі: …\nЖетістік: …\nҰсыныс: …</code>" +
         (cur ? "\n\nҚазір:\n" + NOTE_KEYS.map((k) => `${NOTE_NAMES[k]}: ${esc(cur[k] ?? "-")}`).join("\n") : ""),
       { parse_mode: "HTML", reply_markup: new InlineKeyboard().text("Өткізу →", "gns") },
@@ -401,10 +477,72 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
     gstate.delete(ctx.from.id);
     await ctx.editMessageReplyMarkup().catch(() => {});
     const p = await personByTg(ctx.from.id);
-    if (p?.yougile_id) {
-      await ctx.reply("✅ Аптаның деректері дайын. Рақмет!");
-      await showGoals(bot, ctx.chat!.id, p);
+    if (p?.yougile_id) await afterNotes(ctx, p);
+  });
+
+  // ➕ Тапсырма қосу — YouGile-де жоқ жұмыс («Құқық 2 пост 5 карусель»)
+  const subjectsKb = (monday: string) => {
+    const kb = new InlineKeyboard();
+    PICK.forEach((s, i) => { kb.text(s.label, `wsu:${i}`); if (i % 3 === 2) kb.row(); });
+    return kb.row().text("🗑 Қосқанымды өшіру", `wdl:${monday}`);
+  };
+  bot.callbackQuery(/^wa:(\d{4}-\d{2}-\d{2})$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const p = await me(ctx);
+    if (!p) return;
+    const monday = ctx.match[1];
+    if (!wizard.has(ctx.from.id)) wizard.set(ctx.from.id, monday);
+    start(ctx, { kind: "wAdd", monday });
+    await ctx.reply(
+      "➕ <b>YouGile-де жоқ жұмысты қосу</b>\nПәнді таңда да, санын жаз — немесе бірден бір жолмен жаз:\n\n" +
+        "<code>Құқық 2 пост 5 карусель</code>\n<code>YouTube 3 обложка</code>\n<code>HR 2 баннер</code>\n\nТүрлері: пост, карусель, обложка, рилс, таргет, баннер, раздатка, презентация.",
+      { parse_mode: "HTML", reply_markup: subjectsKb(monday) },
+    );
+  });
+  bot.callbackQuery(/^wsu:(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const s = gstate.get(ctx.from.id);
+    const pick = PICK[Number(ctx.match[1])];
+    if (!pick || s?.kind !== "wAdd") return;
+    gstate.set(ctx.from.id, { kind: "wAdd", monday: s.monday, subject: pick.label });
+    await ctx.reply(`<b>${pick.label}</b> — қанша жасадың? Мысалы: <code>2 пост 5 карусель</code>`, { parse_mode: "HTML" });
+  });
+  bot.callbackQuery(/^wao$|^war$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    await ctx.editMessageReplyMarkup().catch(() => {});
+    const s = gstate.get(ctx.from.id);
+    if (s?.kind !== "wAddOk") return;
+    if (ctx.match[0] === "war") {
+      gstate.set(ctx.from.id, { kind: "wAdd", monday: s.monday });
+      return ctx.reply("Қайта жаз: пән + саны, мысалы «Құқық 2 пост 5 карусель».");
     }
+    const p = await me(ctx);
+    if (!p) return;
+    await q("INSERT INTO manual_works (designer_yid, week, subject, loc, items) VALUES ($1,$2,$3,$4,$5)",
+      [p.yougile_id, s.monday, s.subject, JSON.stringify(s.loc), JSON.stringify(s.items)]);
+    gstate.delete(ctx.from.id);
+    await ctx.reply(`✅ Қосылды: ${esc(itemsText(s.subject, s.items))}. Жаңартылған есеп:`, { parse_mode: "HTML" });
+    await deps.resendWeek(ctx.chat!.id, p, s.monday);
+  });
+  bot.callbackQuery(/^wdl:(\d{4}-\d{2}-\d{2})$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const p = await me(ctx);
+    if (!p) return;
+    const list = await q<any>("SELECT * FROM manual_works WHERE designer_yid=$1 AND week=$2 ORDER BY id", [p.yougile_id, ctx.match[1]]);
+    if (!list.length) return ctx.reply("Бұл аптада өзің қосқан жұмыс жоқ.");
+    const kb = new InlineKeyboard();
+    list.forEach((m) => kb.text(`🗑 ${itemsText(m.subject, m.items)}`.slice(0, 60), `wdx:${m.id}`).row());
+    await ctx.reply("Қайсысын өшіреміз?", { reply_markup: kb });
+  });
+  bot.callbackQuery(/^wdx:(\d+)$/, async (ctx) => {
+    await ctx.answerCallbackQuery();
+    const p = await me(ctx);
+    if (!p) return;
+    const m = await one<any>("DELETE FROM manual_works WHERE id=$1 AND designer_yid=$2 RETURNING *", [Number(ctx.match[1]), p.yougile_id]);
+    await ctx.editMessageReplyMarkup().catch(() => {});
+    if (!m) return;
+    await ctx.reply(`🗑 Өшірілді: ${esc(itemsText(m.subject, m.items))}`, { parse_mode: "HTML" });
+    await deps.resendWeek(ctx.chat!.id, p, String(m.week instanceof Date ? m.week.toISOString().slice(0, 10) : m.week).slice(0, 10));
   });
 
   // Админ: Figma апталық есебіне деректерді қазір салу
@@ -425,7 +563,7 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
     await ctx.answerCallbackQuery();
     const p = await me(ctx);
     if (!p) return;
-    await clearLiked(p.yougile_id!, thisMonday());
+    await clearLiked(p.yougile_id!, weekFor(ctx.from!.id));
     await ctx.reply("Тазаланды. Жаңа суреттерді жібер.");
   });
 
@@ -433,7 +571,7 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
     await ctx.answerCallbackQuery();
     const p = await me(ctx);
     if (!p) return;
-    const rows = await goalsWithProgress(p.yougile_id!, thisMonday());
+    const rows = await goalsWithProgress(p.yougile_id!, weekFor(ctx.from!.id));
     const kb = new InlineKeyboard();
     rows.forEach((g, i) => kb.text(`${i + 1}. ${g.title}`.slice(0, 60), `ge:${g.id}`).row());
     kb.text("↩️ Артқа", "gv");
@@ -542,6 +680,28 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
     const p = await personByTg(tg);
     if (!p?.yougile_id) { gstate.delete(tg); return next(); }
 
+    if (s.kind === "wAdd" || s.kind === "wAddOk") {
+      const found = findSubject(text);
+      const subject = found?.label ?? (s.kind === "wAdd" ? s.subject : undefined);
+      const items = parseWorkItems(text, subject);
+      if (!Object.keys(items).length) {
+        if (s.kind === "wAdd" && !s.subject) { gstate.delete(tg); return next(); } // бұл сұрақ болуы мүмкін
+        return ctx.reply("Санын түрімен жаз, мысалы «2 пост 5 карусель» немесе «3 обложка».");
+      }
+      let pick: { label: string; loc: any } | undefined = subject ? pickBySubject(subject) : undefined;
+      if (!pick) {
+        // Тізімде жоқ пән: сандардан бұрынғы сөз — пәннің атауы («Junior Camp 2 баннер» → «Junior Camp»)
+        const name = text.split(/\d/)[0].replace(/[-—:,]+$/, "").trim();
+        if (!name) return ctx.reply("Қай пән/аккаунт? Батырмадан таңда немесе алдына жаз: «Құқық 2 пост».");
+        pick = otherSubject(name.slice(0, 40));
+      }
+      gstate.set(tg, { kind: "wAddOk", monday: s.monday, subject: pick.label, loc: pick.loc, items });
+      return ctx.reply(`➕ <b>${esc(itemsText(pick.label, items))}</b>\nЕсепке қосамын ба?`, {
+        parse_mode: "HTML",
+        reply_markup: new InlineKeyboard().text("✅ Қосу", "wao").text("✏️ Қайта жазу", "war"),
+      });
+    }
+
     if (s.kind === "gAdd") {
       const items = parseGoalLines(text);
       if (!items.length) return ctx.reply("Мақсат табылмады. Әр жолға бір мақсат жаз.");
@@ -585,8 +745,8 @@ export function registerGoals(bot: Bot, deps: { clearMain: (tg: number) => void;
       const n = parseNotes(text);
       await saveNotes(p.yougile_id, s.monday, n);
       gstate.delete(tg);
-      await ctx.reply("📝 Сақталды:\n" + NOTE_KEYS.map((k) => `${NOTE_NAMES[k]}: ${esc(n[k] ?? "-")}`).join("\n") + "\n\n✅ Аптаның деректері дайын. Рақмет!", { parse_mode: "HTML" });
-      return showGoals(bot, ctx.chat!.id, p);
+      await ctx.reply("📝 Сақталды:\n" + NOTE_KEYS.map((k) => `${NOTE_NAMES[k]}: ${esc(n[k] ?? "-")}`).join("\n"), { parse_mode: "HTML" });
+      return afterNotes(ctx, p);
     }
 
     if (s.kind === "gProof") {

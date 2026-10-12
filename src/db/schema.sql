@@ -200,3 +200,18 @@ CREATE TABLE IF NOT EXISTS weekly_notes (
   updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),
   PRIMARY KEY (designer_yid, week)
 );
+
+-- YouGile-де жоқ жұмысты дизайнер өзі қосады (➕ Тапсырма қосу): есепке, Excel-ге, Figma-ға кіреді
+CREATE TABLE IF NOT EXISTS manual_works (
+  id           SERIAL PRIMARY KEY,
+  designer_yid TEXT NOT NULL,
+  week         DATE NOT NULL,
+  subject      TEXT NOT NULL,          -- «Құқық»
+  loc          JSONB,                  -- {project, board, column} — Excel парағы мен пәнді анықтау үшін
+  items        JSONB NOT NULL,         -- {"Пост": 2, "Карусель": 5}
+  note         TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS manual_works_week ON manual_works (week, designer_yid);
+-- Дүйсенбі 12:15 «есепке дайынмын» ағыны: дизайнер «📤 Жіберу» басқан уақыт
+ALTER TABLE weekly_reports ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMPTZ;

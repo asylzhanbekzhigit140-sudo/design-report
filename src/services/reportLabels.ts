@@ -24,6 +24,7 @@ const PROJECT: Record<string, string> = { hr: "HR", juzeng: "JUZENG", design: "�
 
 /** Бір тапсырманың есептегі «пәні» */
 export function reportSubject(r: { trace: any }): string {
+  if (r.trace?.added && r.trace.subject) return r.trace.subject;
   const loc = r.trace?.location ?? null;
   const s = subjectFor(loc).name;
   if (PRETTY[s]) return PRETTY[s];
@@ -55,3 +56,65 @@ export function subjectLines(rows: { trace: any; items: Record<string, number> }
     .sort(([, a], [, b]) => sum(b) - sum(a))
     .map(([s, it]) => `${s} — ${WORK_TYPES.filter((w) => it[w]).map((w) => typeName(s, w, it[w])).join(", ")}`);
 }
+
+// ---------- «➕ Тапсырма қосу»: «Құқық 2 пост 5 карусель» ----------
+type Loc = { project: string; board: string; column: string };
+const pk = (column: string): Loc => ({ project: "Marketing", board: "Пән акк", column });
+/** Таңдауға шығатын пәндер/аккаунттар (батырма) және мәтіннен табу үлгісі */
+export const PICK: { label: string; re: RegExp; loc: Loc }[] = [
+  { label: "Ағылшын", re: /ағылшын|англ|english/i, loc: pk("Англ") },
+  { label: "Химия", re: /хими/i, loc: pk("Химия") },
+  { label: "Биология", re: /биолог/i, loc: pk("Биология") },
+  { label: "Физика", re: /физик/i, loc: pk("Физика") },
+  { label: "География", re: /географ/i, loc: pk("География") },
+  { label: "Математика", re: /математ|(?:^|\s)мат(?:\s|$)/i, loc: pk("Математика") },
+  { label: "Тарих МС", re: /тарих\s*мс|қазақстан тарих/i, loc: pk("ТарихМс") },
+  { label: "Дүниежүзі тарихы", re: /дүниежүзі|джт/i, loc: pk("Дүниежүзі тарихы") },
+  { label: "Әдебиет/тіл", re: /әдеб|қазақ тіл/i, loc: pk("ӘдебТіл") },
+  { label: "Информатика", re: /информат|инфо(?![а-яәіңғүұқөһ])/i, loc: pk("Информатика") },
+  { label: "Құқық", re: /құқық|кукык/i, loc: pk("Құқық") },
+  { label: "Руслит", re: /руслит|русск/i, loc: pk("РусЛит") },
+  { label: "JUZ40 Online", re: /online|онлайн|juz40\s*onl/i, loc: pk("Online") },
+  { label: "IELTS", re: /ielts/i, loc: { project: "Marketing", board: "Проект", column: "IELTS" } },
+  { label: "Community", re: /community|комьюнити|\bcomm\b/i, loc: { project: "Marketing", board: "Проект", column: "Community" } },
+  { label: "Junior", re: /junior/i, loc: { project: "Marketing", board: "Проект", column: "Junior" } },
+  { label: "Career", re: /career/i, loc: { project: "Marketing", board: "Проект", column: "Career" } },
+  { label: "YouTube", re: /youtube|ютуб/i, loc: { project: "Product", board: "YouTube", column: "Қолмен" } },
+  { label: "HR", re: /\bhr\b|эйчар|hr\s*бөлім/i, loc: { project: "HR", board: "Қолмен", column: "HR" } },
+  { label: "JUZENG", re: /juzeng|жузенг/i, loc: { project: "JUZENG", board: "Қолмен", column: "JUZENG" } },
+];
+export const pickBySubject = (label: string) => PICK.find((p) => p.label === label);
+export const findSubject = (text: string) => PICK.find((p) => p.re.test(text)) ?? null;
+/** Тізімде жоқ пән: дизайнер жазған атау «Басқа» парағына түседі */
+export const otherSubject = (name: string) => ({ label: name, loc: { project: name, board: "Қолмен", column: name } as Loc });
+
+const TYPE_WORDS: [string, string][] = [
+  ["YouTube обложка", "(?:youtube|ютуб)\\s*обложк\\S*"],
+  ["Рилс обложка", "(?:рилс|рилз|reels?)(?:\\s*обложк\\S*)?"],
+  ["Таргет баннер", "таргет\\S*(?:\\s*баннер\\S*)?"],
+  ["Пост", "пост\\S*|post\\S*"],
+  ["Карусель", "карусел\\S*|carousel\\S*"],
+  ["Баннер", "баннер\\S*|banner\\S*"],
+  ["Раздатка", "раздатк\\S*|handout\\S*"],
+  ["Презентация", "презентац\\S*"],
+  ["Обложка", "обложк\\S*|cover\\S*"],
+];
+/** «2 пост, 5 карусель» / «пост - 2» → {Пост: 2, Карусель: 5} */
+export function parseWorkItems(text: string, subject?: string): Record<string, number> {
+  let t = " " + text.toLowerCase() + " ";
+  const out: Record<string, number> = {};
+  for (const [type, word] of TYPE_WORDS) {
+    const re = new RegExp(`(\\d+)\\s*(?:${word})|(?:${word})\\s*[-—:–]?\\s*(\\d+)`, "giu");
+    t = t.replace(re, (_m, a, b) => {
+      const n = Number(a ?? b);
+      if (n > 0 && n <= 500) {
+        const key = type === "Обложка" && subject === "YouTube" ? "YouTube обложка" : type;
+        out[key] = (out[key] ?? 0) + n;
+      }
+      return " ";
+    });
+  }
+  return out;
+}
+export const itemsText = (subject: string, items: Record<string, number>) =>
+  `${subject} — ${WORK_TYPES.filter((w) => items[w]).map((w) => typeName(subject, w, items[w])).join(", ")}`;

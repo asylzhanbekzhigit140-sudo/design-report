@@ -60,6 +60,7 @@ export function subjectFor(loc: { project: string; board: string; column: string
   if (!loc) return { name: "БЕЛГІСІЗ", sheet: "ӨЗГЕ" as SheetName };
   const hit = SUBJECTS[`${loc.project}/${loc.board}/${loc.column}`];
   if (hit) return hit;
+  if (loc.board === "Қолмен") return { name: loc.column.toUpperCase(), sheet: "ӨЗГЕ" as SheetName }; // дизайнер өзі қосқан
   if (loc.project === "Product" && loc.board === "YouTube") return { name: "YOUTUBE", sheet: "ӨЗГЕ" as SheetName };
   if (loc.project === "Marketing" && loc.board === "Проект")
     return { name: loc.column.toUpperCase(), sheet: "ИНСТА АКК" as SheetName };

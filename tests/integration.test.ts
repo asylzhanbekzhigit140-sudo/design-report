@@ -298,11 +298,18 @@ test("Figma есебіне деректер: payload → GitHub (mock)", { skip 
   await connect(URL_!);
   const mon = thisMon.monday;
   await saveNotes(ME, mon, { problem: "кеш ТЗ", solution: null, achievement: "IELTS бекітілді", idea: null });
+  // ➕ Дизайнер өзі қосқан жұмыс: есепке, Excel-ге, Figma-ға кіреді
+  await q("INSERT INTO manual_works (designer_yid, week, subject, loc, items) VALUES ($1,$2,'Құқық',$3,$4)",
+    [ME, mon, JSON.stringify({ project: "Marketing", board: "Пән акк", column: "Құқық" }), JSON.stringify({ Пост: 2, Карусель: 5 })]);
+  const wr = await weekRows(mon, ME);
+  assert.ok(wr.some((r) => r.id < 0 && r.trace.added && r.items.Пост === 2));
+  assert.match(designerReportText("Асылжан", mon, wr), /Өзің қостың: Құқық — 2 пост · 5 карусель/);
   const { payload } = await buildWeekPayload(mon);
   const a = payload.designers.find((d: any) => d.excelName === "Бекжігіт")!;
   assert.equal(a.fullName, "БЕКЖІГІТ АСЫЛЖАН");
   assert.ok(a.works.length > 0 && a.works.every((w: string) => /^[^»]+ — \d+ [^,]+(, \d+ .+)*$/.test(w)), a.works.join("|"));
   assert.equal(a.notes.achievement, "IELTS бекітілді");
+  assert.ok(a.works.includes("Құқық — 2 пост, 5 карусель"), a.works.join("|"));
   assert.ok(a.goals.length > 0 && typeof a.conversion.overall === "number");
 
   const files = new Map<string, string>();

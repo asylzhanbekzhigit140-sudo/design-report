@@ -13,7 +13,7 @@ import { weekOf, weekRangeText, weekFromMonday } from "../time/week.js";
 void weekRangeText;
 import { config } from "../config.js";
 import { askAI } from "../services/ai.js";
-import { registerGoals, GOALS_BTN, clearGoalState } from "./goalsBot.js";
+import { registerGoals, GOALS_BTN, clearGoalState, startWizard, inWizard, likedPrompt, reportMonday, REPORT_CUTOFF_HOUR } from "./goalsBot.js";
 import { goalsBlock, teamGoalsLine } from "../services/goals.js";
 import { publishOpenWeeks, publishWeek, sheetUrl, sheetsClient } from "../services/sheets.js";
 import { designerCard, teamCard } from "../services/card.js";
@@ -57,8 +57,10 @@ async function sendLong(ctx: Context, text: string, kb?: InlineKeyboard, html = 
 
 const WEBAPP_URL = process.env.WEBAPP_URL?.replace(/\/$/, "") || "";
 
-export function weeklyKeyboard(monday: string) {
-  const kb = new InlineKeyboard().text("👀 Толығырақ", `rep:${monday}`).text("✏️ Қате бар", `err:${monday}`).row().text("✅ Бәрі дұрыс", `ok:${monday}`);
+export function weeklyKeyboard(monday: string, wizard = false) {
+  const kb = new InlineKeyboard().text("👀 Толығырақ", `rep:${monday}`).text("✏️ Қате бар", `err:${monday}`).row()
+    .text("➕ Тапсырма қосу", `wa:${monday}`).row()
+    .text(wizard ? "✅ Дұрыс, келесі қадам →" : "✅ Бәрі дұрыс", `ok:${monday}`);
   if (WEBAPP_URL) kb.row().webApp("📱 Қосымшада ашу", WEBAPP_URL);
   return kb;
 }
@@ -75,7 +77,43 @@ async function sendDesignerWeek(bot: Bot, chatId: number, p: Person, monday: str
     console.error("card:", e.message);
   }
   const goals = await goalsBlock(p.yougile_id!, monday).catch(() => "");
-  await bot.api.sendMessage(chatId, designerReportText(p.name, monday, rows, prev) + (goals ? `\n${goals}` : ""), { parse_mode: "HTML", reply_markup: weeklyKeyboard(monday) });
+  await bot.api.sendMessage(chatId, designerReportText(p.name, monday, rows, prev) + (goals ? `\n${goals}` : ""), {
+    parse_mode: "HTML", reply_markup: weeklyKeyboard(monday, !!p.telegram_id && inWizard(p.telegram_id)),
+  });
+}
+
+/**
+ * Дүйсенбі 12:15 — «Апталық есепке дайынсың ба?»: 1️⃣ есепті тексеру (қате болса түзету, жоқ жұмысты қосу)
+ * → 2️⃣ ұнаған жұмыс пен апта қорытындысы → 3️⃣ айлық мақсат → 📤 жіберу. 13:00-де Figma-ға жиналады.
+ */
+export async function sendWeekStart(bot: Bot, monday: string, only?: Person[]) {
+  const ds = only ?? (await q<Person>("SELECT * FROM people WHERE role='designer' AND telegram_id IS NOT NULL AND yougile_id IS NOT NULL AND active"));
+  let n = 0;
+  for (const d of ds) {
+    try {
+      startWizard(d.telegram_id!, monday);
+      await q("INSERT INTO weekly_reports (week, designer_yid) VALUES ($1,$2) ON CONFLICT DO NOTHING", [monday, d.yougile_id]).catch(() => {});
+      await bot.api.sendMessage(d.telegram_id!,
+        `👋 <b>${esc(d.name)}, апталық есепке дайынсың ба?</b>\n${weekRangeText(weekFromMonday(monday))} · ${REPORT_CUTOFF_HOUR}:00-ге дейін, 3 қадам:\n\n` +
+        `1️⃣ Есебіңді тексер — қате болса түзет, YouGile-де жоқ жұмыс болса «➕ Тапсырма қосу»\n` +
+        `2️⃣ Ұнаған жұмыстар мен апта қорытындысы\n3️⃣ Айлық мақсаттың пайызын жаңарт\n\nСосын «📤 Есепті жіберу» — Figma есебіне өзі түседі.`,
+        { parse_mode: "HTML" });
+      await sendDesignerWeek(bot, d.telegram_id!, d, monday);
+      n++;
+    } catch (e: any) {
+      console.error("week start:", d.name, e.message);
+    }
+  }
+  return n;
+}
+
+/** Дүйсенбі 12:45 — әлі жібермегендерге ескерту */
+export async function sendWeekNudge(bot: Bot, monday: string) {
+  const ds = await q<Person>(
+    `SELECT p.* FROM people p LEFT JOIN weekly_reports w ON w.designer_yid=p.yougile_id AND w.week=$1
+      WHERE p.role='designer' AND p.telegram_id IS NOT NULL AND p.active AND w.submitted_at IS NULL`, [monday]);
+  for (const d of ds)
+    await bot.api.sendMessage(d.telegram_id!, `⏰ ${REPORT_CUTOFF_HOUR}:00-де апталық есеп жиналады — үлгерсең, соңында «📤 Есепті жіберу» бас.`).catch(() => {});
 }
 
 /**
@@ -221,6 +259,7 @@ export const ADMIN_COMMANDS = [
   ...USER_COMMANDS,
   { command: "msg", description: "Қызметкерлерге хабарлама жіберу" },
   { command: "weekly", description: "Админ: аптаның жиынтығы" },
+  { command: "ask_week", description: "Админ: «есепке дайынсың ба?» ағынын бастау" },
   { command: "review", description: "Админ: тексеру кезегі" },
   { command: "export", description: "Админ: Excel" },
   { command: "sheet", description: "Админ: Google Sheets-ті жаңарту" },
@@ -303,7 +342,10 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
   const bot = new Bot(token);
 
   // Айлық мақсаттар (өз хабарлама ағыны бар — негізгі диалогтардан бұрын тіркеледі)
-  registerGoals(bot, { clearMain: (tg) => state.delete(tg), hasMain: (tg) => state.has(tg), isAdmin });
+  registerGoals(bot, {
+    clearMain: (tg) => state.delete(tg), hasMain: (tg) => state.has(tg), isAdmin,
+    resendWeek: (chatId, p, monday) => sendDesignerWeek(bot, chatId, p as Person, monday),
+  });
 
   // ---------- Тіркелу ----------
   bot.command("start", async (ctx) => {
@@ -481,6 +523,21 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
     await sendTeamWeek(bot, ctx.chat!.id, mondayArg(ctx.match));
   });
 
+  // «Апталық есепке дайынсың ба?» ағынын қолмен бастау: /ask_week [YYYY-MM-DD] [me]
+  bot.command("ask_week", async (ctx) => {
+    if (!(await admin(ctx))) return;
+    const arg = String(ctx.match ?? "");
+    const monday = mondayArg(arg);
+    let only: Person[] | undefined;
+    if (/\bme\b|мен/i.test(arg)) {
+      const p = await personByTg(ctx.from!.id);
+      if (!p?.yougile_id) return ctx.reply("Сіздің профиліңізге YouGile байланбаған — тексеру үшін дизайнер аккаунты керек.");
+      only = [p];
+    }
+    const n = await sendWeekStart(bot, monday, only);
+    await ctx.reply(`📋 «Апталық есепке дайынсың ба?» ${n} дизайнерге жіберілді (${monday} аптасы).`);
+  });
+
   bot.command("review", async (ctx) => {
     if (!(await admin(ctx))) return;
     const monday = mondayArg(ctx.match);
@@ -552,6 +609,9 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
     if (!p?.yougile_id) return;
     await q("UPDATE weekly_reports SET status='confirmed', confirmed_at=now() WHERE week=$1 AND designer_yid=$2", [ctx.match[1], p.yougile_id]);
     await ctx.editMessageReplyMarkup().catch(() => {});
+    // Бот қайта іске қосылса да: дүйсенбі 13:00-ге дейін өткен аптаны растау — ағынның 2-қадамы
+    if (!inWizard(ctx.from.id) && reportMonday() === ctx.match[1] && weekOf(Date.now()).monday !== ctx.match[1]) startWizard(ctx.from.id, ctx.match[1]);
+    if (inWizard(ctx.from.id)) return likedPrompt(bot, ctx.chat!.id, ctx.from.id, p); // 2-қадам
     await ctx.reply("✅ Есеп расталды.");
   });
 
@@ -561,7 +621,8 @@ export function createBot(token: string, hooks: { runSync: () => Promise<string>
     if (!p?.yougile_id) return;
     const rows = await weekRows(ctx.match[1], p.yougile_id);
     const kb = new InlineKeyboard();
-    rows.slice(0, 40).forEach((r) => kb.text(`${r.trace.title} · ${subjectOf(r)}`.slice(0, 60), `fix:${r.id}`).row());
+    rows.filter((r) => r.id > 0).slice(0, 40).forEach((r) => kb.text(`${r.trace.title} · ${subjectOf(r)}`.slice(0, 60), `fix:${r.id}`).row());
+    if (rows.some((r) => r.id < 0)) kb.text("🗑 Өзім қосқан жұмысты өшіру", `wdl:${ctx.match[1]}`).row();
     await ctx.reply("Қай тапсырмада қате бар?", { reply_markup: kb });
   });
 
@@ -947,12 +1008,8 @@ export async function sendToBoss(bot: Bot, monday: string) {
 }
 
 /** Дизайнерлерге апталық есеп */
+/** Дүйсенбі 09:00 — админге бөлімнің жиынтығы (дизайнерлерге есеп 12:15-да «📋 дайынсың ба?» ағынымен барады) */
 export async function sendWeekly(bot: Bot, monday: string) {
-  const ds = await q<Person>("SELECT * FROM people WHERE role='designer' AND telegram_id IS NOT NULL AND active");
-  for (const d of ds) {
-    await sendDesignerWeek(bot, d.telegram_id!, d, monday).catch((e) => console.error("weekly:", d.name, e.message));
-    await q("INSERT INTO weekly_reports (week, designer_yid) VALUES ($1,$2) ON CONFLICT DO NOTHING", [monday, d.yougile_id]);
-  }
   for (const a of await q<Person>("SELECT * FROM people WHERE (role='admin' OR is_admin) AND telegram_id IS NOT NULL AND active"))
     await sendTeamWeek(bot, a.telegram_id!, monday).catch((e) => console.error("weekly admin:", e.message));
 }

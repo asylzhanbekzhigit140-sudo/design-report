@@ -10,10 +10,10 @@ import { connect, getSetting, setSetting } from "./db/db.js";
 import { config } from "./config.js";
 import { YouGileClient } from "./yougile/client.js";
 import { syncAll } from "./services/sync.js";
-import { createBot, notifyPending, sendWeekly, sendToBoss, notifyAdmins, USER_COMMANDS, setAdminCommands, applyProfile, sendExcel, sendHrPrep } from "./bot/bot.js";
+import { createBot, notifyPending, sendWeekly, sendWeekStart, sendWeekNudge, sendToBoss, notifyAdmins, USER_COMMANDS, setAdminCommands, applyProfile, sendExcel, sendHrPrep } from "./bot/bot.js";
 import { startWebServer } from "./web/server.js";
 import { exportWeekToGitHub, githubEnabled } from "./services/figmaExport.js";
-import { sendGoalCheckin, sendGoalReminder, sendGoalMonthStart, autoImportGoals } from "./bot/goalsBot.js";
+import { sendGoalMonthStart, autoImportGoals } from "./bot/goalsBot.js";
 import { recalcOpenWeeks } from "./services/calcs.js";
 import { weekOf } from "./time/week.js";
 import { findNewTzIssues, tzIssuesText } from "./services/tzcheck.js";
@@ -91,12 +91,16 @@ async function main() {
       .catch((e) => console.error("goals import:", e.message));
   void goalsImport();
   cron.schedule("30 9 * * 1", () => void goalsImport(), tz);
-  // Айлық мақсаттар: сенбі 19:00 «толтыр», дүйсенбі 08:00 толтырмағандарға ескерту, дүйсенбі 10:00 жаңа ай
-  cron.schedule("0 19 * * 6", () => void sendGoalCheckin(bot).catch((e) => notifyAdmins(bot, `❌ Мақсат сұрауы: ${e.message}`)), tz);
-  cron.schedule("0 8 * * 1", () => void sendGoalReminder(bot).catch((e) => console.error("goal reminder:", e.message)), tz);
+  // Дүйсенбі: 10:00 жаңа айдың мақсаты жоқтарға еске салу
   cron.schedule("0 10 * * 1", () => void sendGoalMonthStart(bot).catch((e) => console.error("goal month:", e.message)), tz);
-  // Figma апталық есебі: дүйсенбі 12:00 деректер GitHub-қа (Claude жоспарлы тапсырмасы 12:30-да слайд жасайды)
-  cron.schedule("0 12 * * 1", () => {
+  // Дүйсенбі 12:15 «Апталық есепке дайынсың ба?» (тексеру → ұнаған жұмыс → айлық мақсат → 📤 жіберу), 12:45 ескерту
+  cron.schedule("15 12 * * 1", () => void sendWeekStart(bot, lastMonday())
+    .then((n) => notifyAdmins(bot, `📋 «Апталық есепке дайынсың ба?» ${n} дизайнерге жіберілді. 13:00-де Figma-ға жиналады.`))
+    .catch((e) => notifyAdmins(bot, `❌ Апталық сауалнама: ${e.message}`)), tz);
+  cron.schedule("45 12 * * 1", () => void sendWeekNudge(bot, lastMonday()).catch((e) => console.error("nudge:", e.message)), tz);
+  // Figma апталық есебі: дүйсенбі 13:00 деректер GitHub-қа (Claude жоспарлы тапсырмасы ~13:16-да слайд жасайды).
+  // Әр дизайнер «📤 Жіберу» басқанда да деректер жаңарады.
+  cron.schedule("0 13 * * 1", () => {
     if (!githubEnabled()) return;
     void exportWeekToGitHub(lastMonday())
       .then((r) => notifyAdmins(bot, `🎨 Figma есебіне деректер дайын: ${r.label} · ${r.designers} дизайнер · ${r.images} сурет`))
