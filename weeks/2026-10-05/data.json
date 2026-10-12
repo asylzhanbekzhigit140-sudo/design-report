@@ -3,7 +3,7 @@
   "label": "ҚАЗАН 1-АПТА",
   "range": "5–11 қазан",
   "month": "ҚАЗАН",
-  "generatedAt": "2026-10-12T07:00:00.475Z",
+  "generatedAt": "2026-10-12T07:18:54.687Z",
   "designers": [
     {
       "name": "Айымбол",
@@ -477,7 +477,20 @@
         "Обложка": 5
       },
       "tasks": 5,
-      "liked": [],
+      "liked": [
+        {
+          "file": "liked/Бекжігіт-1.jpg",
+          "caption": null
+        },
+        {
+          "file": "liked/Бекжігіт-2.jpg",
+          "caption": null
+        },
+        {
+          "file": "liked/Бекжігіт-3.jpg",
+          "caption": null
+        }
+      ],
       "notes": {
         "problem": null,
         "solution": null,
@@ -510,9 +523,9 @@
           "kind": "op",
           "title": "PDP-1. Photoshop база қалыптастыру",
           "target": 100,
-          "fact": 0,
+          "fact": 25,
           "isPercent": true,
-          "conversion": 0,
+          "conversion": 25,
           "proof": null
         },
         {
@@ -530,9 +543,9 @@
           "kind": "op",
           "title": "PDP-3. Кітап «Өзбекәлі және мәдени майдан»",
           "target": 100,
-          "fact": 3,
+          "fact": 25,
           "isPercent": true,
-          "conversion": 3,
+          "conversion": 25,
           "proof": null
         },
         {
@@ -627,9 +640,9 @@
         }
       ],
       "conversion": {
-        "op": 18,
+        "op": 23,
         "strat": 0,
-        "overall": 9,
+        "overall": 11,
         "done": 2,
         "total": 14
       }
