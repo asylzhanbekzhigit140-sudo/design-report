@@ -1,0 +1,1604 @@
+{
+  "monday": "2026-10-05",
+  "label": "ҚАЗАН 1-АПТА",
+  "range": "5–11 қазан",
+  "month": "ҚАЗАН",
+  "generatedAt": "2026-10-12T07:00:00.475Z",
+  "designers": [
+    {
+      "name": "Айымбол",
+      "excelName": "Бекболат",
+      "fullName": "БЕКБОЛАТ АЙЫМБОЛ",
+      "works": [],
+      "totals": {},
+      "tasks": 0,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (1 Пост, 1 тикток/рилс)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-2. «Секрет» киносы толық көру.",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-3. OYKOZ жобасының брендтің позициялауын, платформасын, коммуникациялық бағыты мен іске асыру принциптерін әзірлеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 95,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимюилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "strat",
+          "title": "Студияны нарыққа шығару: атау, айдентика, портфолио-сайт, прайс және шарт шаблоны бекітіледі",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "strat",
+          "title": "Community жобасының айдентика элементтерін құрастыру (Comm бөлімі)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 12,
+          "kind": "strat",
+          "title": "Жаңа оқу материалдарын 100% әзірлеп шығару. (База, презентация)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 0,
+        "strat": 0,
+        "overall": 0,
+        "done": 0,
+        "total": 12
+      }
+    },
+    {
+      "name": "Жания",
+      "excelName": "Абубакирова",
+      "fullName": "АБУБАКИРОВА ЖӘНИЯ ЖАНДОСҚЫЗЫ",
+      "works": [],
+      "totals": {},
+      "tasks": 0,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (1 Пост, 1 тикток/рилс)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-1. Өзбекәлі және мәдени майдан оқып бітіру",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-2. Секрет киносын көру",
+          "target": 1200,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "PDP-3. Шектеулермен дизайн эксперименттерін жасау (4)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимюилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "strat",
+          "title": "JUZstar нышаның минималистік нұсқаларын әзірлеу  (IT бөлімі) 3 апта",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 12,
+          "kind": "strat",
+          "title": "Qyryq ұжымдық баспасының 11-ші шығарылымын әзірлеу (PR бөлімі) 1 апта",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 13,
+          "kind": "strat",
+          "title": "Жаңа оқу материалдарын 100% әзірлеп шығару. (База, презентация)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 0,
+        "strat": 0,
+        "overall": 0,
+        "done": 0,
+        "total": 13
+      }
+    },
+    {
+      "name": "Нұрмұхаммад",
+      "excelName": "Асханов",
+      "fullName": "АСХАНОВ НҰРМУХАММАД АБДУХАМИТҰЛЫ",
+      "works": [
+        "YouTube — 12 обложка"
+      ],
+      "totals": {
+        "YouTube обложка": 12
+      },
+      "tasks": 10,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (1 Пост, 1 тикток/рилс)",
+          "target": 100,
+          "fact": 100,
+          "isPercent": true,
+          "conversion": 100,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-1. Claude арқылы Motion Design \"SaaS\" animation",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-2. Кітап «Өзбекәлі және мәдени майдан»",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "PDP-3. «Секрет» киносы толық көру.",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимбилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "strat",
+          "title": "Студияны нарыққа шығару: атау, айдентика, портфолио-сайт, прайс және шарт шаблоны бекітіледі",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 12,
+          "kind": "strat",
+          "title": "Қайталанатын 1 процесті ИИ-мен автоматтандыру: Коммерция — 1  НТ обложка",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 13,
+          "kind": "strat",
+          "title": "Жаңа оқу материалдарын 100% әзірлеп шығару. (База, презентация)",
+          "target": 100,
+          "fact": 50,
+          "isPercent": true,
+          "conversion": 50,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 10,
+        "strat": 17,
+        "overall": 13,
+        "done": 1,
+        "total": 13
+      }
+    },
+    {
+      "name": "Асылжан",
+      "excelName": "Бекжігіт",
+      "fullName": "БЕКЖІГІТ АСЫЛЖАН",
+      "works": [
+        "Ағылшын — 3 пост, 32 карусель",
+        "Дизайн — 5 обложка",
+        "YouTube — 1 обложка"
+      ],
+      "totals": {
+        "YouTube обложка": 1,
+        "Пост": 3,
+        "Карусель": 32,
+        "Обложка": 5
+      },
+      "tasks": 5,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (1 Пост, 1 тикток/рилс)",
+          "target": 100,
+          "fact": 100,
+          "isPercent": true,
+          "conversion": 100,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-1. Photoshop база қалыптастыру",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-2. Тайм-менеджмент бойынша дамуды жалғастыру",
+          "target": 100,
+          "fact": 100,
+          "isPercent": true,
+          "conversion": 100,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "PDP-3. Кітап «Өзбекәлі және мәдени майдан»",
+          "target": 100,
+          "fact": 3,
+          "isPercent": true,
+          "conversion": 3,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "PDP-4. Кино \"Секрет\" киносын аяқтау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимюилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 12,
+          "kind": "strat",
+          "title": "PDP-5. \"Бренд дизайнер\" курсы бойыншы финалдық жобалық жұмысты әзірлеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 13,
+          "kind": "strat",
+          "title": "HR бөлім қызметкерлерінің жеке мерч топтамысын әзірлеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 14,
+          "kind": "strat",
+          "title": "IELTS видеосабақ материалдарын дайындау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 18,
+        "strat": 0,
+        "overall": 9,
+        "done": 2,
+        "total": 14
+      }
+    },
+    {
+      "name": "Алтынай",
+      "excelName": "Махмутхан",
+      "fullName": "МАХМУТХАНҚЫЗЫ АЛТЫНАЙ",
+      "works": [],
+      "totals": {},
+      "tasks": 0,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (1 Пост, 1 тикток/рилс)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-1.  «Өзбекәлі және мәдени майдан» кітабын 100% оқып бітіру",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-2.  «Секрет» киносы толық көру.",
+          "target": 1200,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимюилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "strat",
+          "title": "Дизайн бөлімінің портфолиосына кемінде 1 мықты кейс енгізу.",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "strat",
+          "title": "\"Коммюнити воллейбол\" жобасының жоспарына сай дизайн материалдарын әзірлеу. (Comm бөлімі)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 0,
+        "strat": 0,
+        "overall": 0,
+        "done": 0,
+        "total": 11
+      }
+    },
+    {
+      "name": "Илан",
+      "excelName": "Рамазан",
+      "fullName": "РАМАЗАН ИЛАН ҚҰРМЕТҚЫЗЫ",
+      "works": [
+        "JUZ40 Online — 6 пост, 38 карусель"
+      ],
+      "totals": {
+        "Пост": 6,
+        "Карусель": 38
+      },
+      "tasks": 6,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (2 тикток/рилс)",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-1.  «Өзбекәлі және мәдени майдан» кітабын 100% оқып бітіру",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-2.  «Секрет» киносы толық көру.",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "PDP-3.  Motion Design-ға AI құралдарын қосу\nБұл айдың мақсаты — AI-ды жеке құрал ретінде емес, After Effects-пен бірге қолдануды үйрену.\nAI + After Effects қолданып 1 ролик жасау.",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимбилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "strat",
+          "title": "\"Математикаға даярлау\" жобасына брендинг әзірлеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 12,
+          "kind": "strat",
+          "title": "8 жылдық жобасының жоспарына сай дизайн материалдарын әзірлеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 13,
+          "kind": "strat",
+          "title": "Youtube-қа әр видеоға 2–3 обложка нұсқасын дайындап, жақсы CTR берген обложка паттерндерін зерттеу.",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 0,
+        "strat": 0,
+        "overall": 0,
+        "done": 0,
+        "total": 13
+      }
+    },
+    {
+      "name": "Балауса",
+      "excelName": "Нұрсұлтан",
+      "fullName": "НҰРСҰЛТАН БАЛАУСА ЕРКІНҚЫЗЫ",
+      "works": [
+        "YouTube — 21 обложка",
+        "Community — 2 пост, 17 карусель",
+        "География — 1 пост, 4 карусель"
+      ],
+      "totals": {
+        "YouTube обложка": 21,
+        "Пост": 3,
+        "Карусель": 21
+      },
+      "tasks": 5,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (2 тикток/рилс)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-1.  «Өзбекәлі және мәдени майдан» кітабын 100% оқып бітіру",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-2.  «Секрет» киносы толық көру.",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "PDP-3.  Фотошопта әртүрлі фотосуреттердің түстерін сәйкестендіруді үйреніп, 1 композицияға қолдану.",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимбилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "strat",
+          "title": "JUZstar нышаның минималистік нұсқаларын әзірлеу  (IT бөлімі) 3 апта",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 12,
+          "kind": "strat",
+          "title": "Community жобасының айдентика элементтерін құрастыру (Comm бөлімі)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 13,
+          "kind": "strat",
+          "title": "\"Коммюнити воллейбол\" жобасының жоспарына сай дизайн материалдарын әзірлеу. (Comm бөлімі)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 0,
+        "strat": 0,
+        "overall": 0,
+        "done": 0,
+        "total": 13
+      }
+    },
+    {
+      "name": "Алина",
+      "excelName": "Маликова",
+      "fullName": "МАЛИКОВА АЛИНА МАЛИКОВНА",
+      "works": [
+        "Биология — 1 пост, 8 карусель",
+        "JUZ40 Online — 1 пост"
+      ],
+      "totals": {
+        "Пост": 2,
+        "Карусель": 8
+      },
+      "tasks": 2,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (1 Пост, 1 тикток/рилс)",
+          "target": 100,
+          "fact": 100,
+          "isPercent": true,
+          "conversion": 100,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-1.  «Секрет» фильм көру 5 инсайт жазу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-2. The Art Director Roadmap: зерттеу, жетекшілікке қолданатын 3 тұсын анықтау",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 95,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимюилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "strat",
+          "title": "\"Математикаға даярлау\" жобасына брендинг әзірлеу 2 апта",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "strat",
+          "title": "Қазақстан және СНГ елдерінің дизайн конкурсқа жұмыстар кейс әзірлеп, тапсыру.",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 12,
+          "kind": "strat",
+          "title": "Qyryq ұжымдық баспасының 11-ші шығарылымын әзірлеу (PR бөлімі) 1 апта",
+          "target": 100,
+          "fact": 25,
+          "isPercent": true,
+          "conversion": 25,
+          "proof": null
+        },
+        {
+          "n": 13,
+          "kind": "strat",
+          "title": "HR бөлім қызметкерлерінің жеке мерч топтамысын әзірлеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 11,
+        "strat": 6,
+        "overall": 9,
+        "done": 1,
+        "total": 13
+      }
+    },
+    {
+      "name": "Нұрбол",
+      "excelName": "Қален",
+      "fullName": "ҚАЛЕН НҰРБОЛ СЕРІКҰЛЫ",
+      "works": [
+        "Құқық — 1 пост, 12 карусель",
+        "IELTS — 1 пост, 4 карусель",
+        "YouTube — 3 обложка"
+      ],
+      "totals": {
+        "YouTube обложка": 3,
+        "Пост": 2,
+        "Карусель": 16
+      },
+      "tasks": 5,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 95,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (1 Пост, 1 тикток/рилс)",
+          "target": 100,
+          "fact": 50,
+          "isPercent": true,
+          "conversion": 50,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-1. \"Бренд дизайнер\" курсы бойыншы финалдық жобалық жұмысты әзірлеу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-2. Дисциплина бойынша бір подкаст қарау - 100%",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "PDP-3. AE тексттарға анимация жасау - 100%",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "PDP-4. «Өзбекәлі және мәдени майдан» кітабын 100% оқып бітіру",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 95,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимюилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": null,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 12,
+          "kind": "strat",
+          "title": "Қайталанатын 1 процесті ИИ-мен автоматтандыру: Коммерция — 1  НТ обложка",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 13,
+          "kind": "strat",
+          "title": "\"Коммюнити воллейбол\" жобасының жоспарына сай дизайн материалдарын әзірлеу. (Comm бөлімі)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 14,
+          "kind": "strat",
+          "title": "Жаңа оқу материалдарын 100% әзірлеп шығару. (База, презентация)",
+          "target": 100,
+          "fact": 50,
+          "isPercent": true,
+          "conversion": 50,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 5,
+        "strat": 17,
+        "overall": 11,
+        "done": 0,
+        "total": 14
+      }
+    },
+    {
+      "name": "Айнур",
+      "excelName": "Шакизат",
+      "fullName": "ШАКИЗАТ АЙНУР МАҚСАТҚЫЗЫ",
+      "works": [
+        "IELTS — 1 пост, 5 карусель"
+      ],
+      "totals": {
+        "Пост": 1,
+        "Карусель": 5
+      },
+      "tasks": 1,
+      "liked": [],
+      "notes": {
+        "problem": null,
+        "solution": null,
+        "achievement": null,
+        "idea": null
+      },
+      "goals": [
+        {
+          "n": 1,
+          "kind": "op",
+          "title": "Өнімділікті 95%-дан түсірмеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 2,
+          "kind": "op",
+          "title": "Инстраграм жүргізу (1 Пост, 1 тикток/рилс)",
+          "target": 100,
+          "fact": 100,
+          "isPercent": true,
+          "conversion": 100,
+          "proof": null
+        },
+        {
+          "n": 3,
+          "kind": "op",
+          "title": "PDP-1. «Өзбекәлі және мәдени майдан» кітабын 100% оқып бітіру",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 4,
+          "kind": "op",
+          "title": "PDP-2. «Секрет» киносы толық көру",
+          "target": 100,
+          "fact": 100,
+          "isPercent": true,
+          "conversion": 100,
+          "proof": null
+        },
+        {
+          "n": 5,
+          "kind": "op",
+          "title": "PDP-3. Photoshop бағдарламасында маска құралын үйреніп 1 пост жасау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 6,
+          "kind": "op",
+          "title": "PDP-4. 5 способов развить эмоциональный интеллект / Анастасия Пономаренко / МИП подскастын қарап, 5 инсайт жазу",
+          "target": 100,
+          "fact": 100,
+          "isPercent": true,
+          "conversion": 100,
+          "proof": null
+        },
+        {
+          "n": 7,
+          "kind": "op",
+          "title": "PDP-5. \"Бренд дизайнер\" курсы бойыншы финалдық жобалық жұмысты әзірлеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 8,
+          "kind": "op",
+          "title": "Айлық мақсат орындалу пайызым 95%-дан кем болмау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 9,
+          "kind": "op",
+          "title": "Бөлімішілік опрос нәтижем 100% болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 10,
+          "kind": "op",
+          "title": "Барлық іс-шараларға 100% белсене қатысу (жиналыс, мереке, тимбилдинг, сергіту сәті)",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 11,
+          "kind": "op",
+          "title": "Берілген тапсырмаларды 100% уақытылы орындау",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 12,
+          "kind": "op",
+          "title": "Сапа бағалау айлық ортақ нәтижесі 8.0 болу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 13,
+          "kind": "strat",
+          "title": "\"Математикаға даярлау\" жобасына брендинг әзірлеу 2 апта",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 14,
+          "kind": "strat",
+          "title": "HR бөлім қызметкерлерінің жеке мерч топтамысын әзірлеу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        },
+        {
+          "n": 15,
+          "kind": "strat",
+          "title": "Pinterest-ке JUZ40 | DSGN аккаунтына бөлім жасаған таңдаулы 20 жұмыс салу",
+          "target": 100,
+          "fact": 0,
+          "isPercent": true,
+          "conversion": 0,
+          "proof": null
+        }
+      ],
+      "conversion": {
+        "op": 25,
+        "strat": 0,
+        "overall": 13,
+        "done": 3,
+        "total": 15
+      }
+    }
+  ]
+}
